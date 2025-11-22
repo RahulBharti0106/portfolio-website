@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Python",
+    "icon": "🐍",
+    "category": "Backend",
+    "proficiency": 75
+  },
+  {
+    "name": "JavaScript",
+    "icon": "⚡",
+    "category": "Frontend",
+    "proficiency": 70
+  },
+  {
+    "name": "React",
+    "icon": "⚛️",
+    "category": "Frontend",
+    "proficiency": 65
+  },
+  {
+    "name": "HTML & CSS",
+    "icon": "🎨",
+    "category": "Frontend",
+    "proficiency": 85
+  },
+  {
+    "name": "Git",
+    "icon": "🔧",
+    "category": "Tools",
+    "proficiency": 70
+  },
+  {
+    "name": "Tailwind",
+    "icon": "💨",
+    "category": "Frontend",
+    "proficiency": 60
+  }
+]

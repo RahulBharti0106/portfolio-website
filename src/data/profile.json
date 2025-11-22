@@ -1,0 +1,14 @@
+{
+  "name": "Rahul Bharti",
+  "tagline": "Aspiring Full-Stack Developer",
+  "shortBio": "I build beautiful web experiences with modern technologies.",
+  "bio": "I'm a passionate developer from Karnal, India. I love creating interactive websites and learning new technologies.",
+  "location": "Karnal, India",
+  "profileImage": "https://via.placeholder.com/400",
+  "resumeUrl": "#",
+  "social": {
+    "github": "https://github.com/yourusername",
+    "linkedin": "https://linkedin.com/in/yourusername",
+    "email": "rahul@example.com"
+  }
+}

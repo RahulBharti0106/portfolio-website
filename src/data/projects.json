@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Portfolio Website",
+    "description": "A modern portfolio website built with React and Framer Motion.",
+    "image": "https://via.placeholder.com/600x400",
+    "techStack": ["React", "Vite", "CSS"],
+    "github": "https://github.com/yourusername/portfolio",
+    "liveDemo": "#"
+  },
+  {
+    "title": "Vibe Coded Site",
+    "description": "My first web project created using AI tools.",
+    "image": "https://via.placeholder.com/600x400",
+    "techStack": ["HTML", "CSS", "JavaScript"],
+    "github": "https://github.com/yourusername/vibe-site",
+    "liveDemo": "#"
+  },
+  {
+    "title": "Focus Timer",
+    "description": "A productivity app with timers and ambient sounds.",
+    "image": "https://via.placeholder.com/600x400",
+    "techStack": ["React", "CSS"],
+    "github": "#",
+    "liveDemo": "#"
+  }
+]
