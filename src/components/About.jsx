@@ -41,10 +41,6 @@ function About() {
               <h3>{profile.projects_count || 0}+</h3>
               <p>Projects</p>
             </div>
-            <div className="stat">
-              <h3>5+</h3>
-              <p>Technologies</p>
-            </div>
           </div>
           <SocialLinks className="social-links" />
         </div>
