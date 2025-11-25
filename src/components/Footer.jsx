@@ -1,5 +1,6 @@
 import { FiGithub, FiLinkedin, FiMail, FiHeart } from 'react-icons/fi'
 import './Footer.css'
+import SocialLinks from './SocialLinks';
 
 function Footer() {
   return (
@@ -14,6 +15,7 @@ function Footer() {
           <a href="https://github.com"><FiGithub size={20} /></a>
           <a href="https://linkedin.com"><FiLinkedin size={20} /></a>
           <a href="mailto:rahul@example.com"><FiMail size={20} /></a>
+          <SocialLinks className="footer-social-links" />
         </div>
       </div>
 

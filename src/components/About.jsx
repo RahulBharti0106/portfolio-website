@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import './About.css'
+import SocialLinks from './SocialLinks';
+
+
 
 function About() {
   const [profile, setProfile] = useState(null)
@@ -43,6 +46,7 @@ function About() {
               <p>Technologies</p>
             </div>
           </div>
+          <SocialLinks className="social-links" />
         </div>
       </div>
     </section>
