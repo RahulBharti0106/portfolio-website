@@ -23,7 +23,7 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
 function App() {
-  // Load theme from Supabase on app startup
+  // Load theme from Supabase (with error handling)
   useEffect(() => {
     async function loadTheme() {
       try {
@@ -31,17 +31,18 @@ function App() {
           .from('themes')
           .select('*')
           .eq('is_active', true)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid errors if no rows
 
-        if (!error && data) {
+        if (data && !error) {
           // Apply theme as CSS variables
-          document.documentElement.style.setProperty('--bg-primary', data.primary_color || '#ffffff');
-          document.documentElement.style.setProperty('--bg-secondary', data.secondary_color || '#f8f9fa');
-          document.documentElement.style.setProperty('--font-family', data.font_family || 'inherit');
-          document.documentElement.style.setProperty('--font-size-base', (data.font_size || 16) + 'px');
+          if (data.primary_color) document.documentElement.style.setProperty('--bg-primary', data.primary_color);
+          if (data.secondary_color) document.documentElement.style.setProperty('--bg-secondary', data.secondary_color);
+          if (data.font_family) document.documentElement.style.setProperty('--font-family', data.font_family);
+          if (data.font_size) document.documentElement.style.setProperty('--font-size-base', data.font_size + 'px');
         }
       } catch (err) {
-        console.error('Failed to load theme:', err);
+        // Silently fail if theme doesn't exist or error occurs
+        console.warn('Theme not loaded, using defaults:', err);
       }
     }
     loadTheme();
