@@ -31,8 +31,8 @@ function Skills() {
   useEffect(() => {
     fetchSkills();
     // Optionally: setup an interval to auto-refresh skills every X seconds if you want "live" updates:
-    const interval = setInterval(fetchSkills, 5000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchSkills, 5000);
+    // return () => clearInterval(interval);
   }, []);
 
   const container = {
