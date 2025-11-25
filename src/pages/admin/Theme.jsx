@@ -1,105 +1,98 @@
-import { useState } from 'react'
-import AdminLayout from '../../components/admin/AdminLayout'
-import toast from 'react-hot-toast'
-import './Theme.css'
+import { useState, useEffect } from 'react';
+import AdminLayout from '../../components/admin/AdminLayout';
+import { supabase } from '../../lib/supabase';
+import toast from 'react-hot-toast';
+import './Theme.css';
 
 function AdminTheme() {
-  const [colors, setColors] = useState({
-    light: {
-      primary: '#ffffff',
-      secondary: '#f8f9fa',
-      accent: '#6366f1',
-      text: '#1a1a1a',
-      textSecondary: '#6b7280'
-    },
-    dark: {
-      primary: '#0a0a0a',
-      secondary: '#1a1a1a',
-      accent: '#6366f1',
-      text: '#ffffff',
-      textSecondary: '#9ca3af'
+  // Temp (preview) and published theme state
+  const [theme, setTheme] = useState({
+    primary_color: '#ffffff',
+    secondary_color: '#f8f9fa',
+    font_family: 'inherit',
+    font_size: 16,
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Load current published theme from Supabase
+  useEffect(() => {
+    const fetchTheme = async () => {
+      const { data, error } = await supabase
+        .from('themes')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+      if (!error && data) setTheme(data);
+      setLoading(false);
+    };
+    fetchTheme();
+  }, []);
+
+  // Preview: applies to admin layout only (not public site)
+  useEffect(() => {
+    document.documentElement.style.setProperty('--bg-primary', theme.primary_color);
+    document.documentElement.style.setProperty('--bg-secondary', theme.secondary_color);
+    document.documentElement.style.setProperty('--font-family', theme.font_family);
+    document.documentElement.style.setProperty('--font-size-base', theme.font_size + 'px');
+    // On unmount, reset (optional)
+    return () => {
+      document.documentElement.style.removeProperty('--bg-primary');
+      document.documentElement.style.removeProperty('--bg-secondary');
+      document.documentElement.style.removeProperty('--font-family');
+      document.documentElement.style.removeProperty('--font-size-base');
     }
-  })
+  }, [theme]);
 
-  const applyTheme = (mode) => {
-    const theme = colors[mode]
-    document.documentElement.style.setProperty('--bg-primary', theme.primary)
-    document.documentElement.style.setProperty('--bg-secondary', theme.secondary)
-    document.documentElement.style.setProperty('--bg-accent', theme.accent)
-    document.documentElement.style.setProperty('--text-primary', theme.text)
-    document.documentElement.style.setProperty('--text-secondary', theme.textSecondary)
-  }
+  const handleChange = (field, value) => {
+    setTheme(prev => ({ ...prev, [field]: value }));
+  };
 
-  const handleColorChange = (mode, key, value) => {
-    setColors(prev => ({
-      ...prev,
-      [mode]: { ...prev[mode], [key]: value }
-    }))
-  }
-
-  const saveTheme = () => {
-    localStorage.setItem('customTheme', JSON.stringify(colors))
-    toast.success('Theme saved!')
-  }
+  // Publish: saves as active theme to Supabase
+  const publishTheme = async () => {
+    setLoading(true);
+    try {
+      // Deactivate all themes
+      await supabase.from('themes').update({ is_active: false });
+      // Activate/update this theme, or insert if none exists
+      let result = await supabase.from('themes').select('id').eq('id', theme.id).single();
+      if (result.data?.id) {
+        await supabase.from('themes').update({ ...theme, is_active: true }).eq('id', theme.id);
+      } else {
+        await supabase.from('themes').insert([{ ...theme, is_active: true }]);
+      }
+      toast.success('Theme published!');
+    } catch (err) {
+      toast.error('Failed to publish!');
+    }
+    setLoading(false);
+  };
 
   return (
     <AdminLayout>
       <div className="theme-customizer">
         <h1>Theme Customizer</h1>
-        <p className="subtitle">Customize your portfolio colors</p>
-
-        <div className="theme-grid">
-          <div className="theme-section">
-            <h2>Light Mode</h2>
-            {Object.keys(colors.light).map((key) => (
-              <div key={key} className="color-input-group">
-                <label>{key.replace(/([A-Z])/g, ' $1').trim()}</label>
-                <div className="color-input">
-                  <input
-                    type="color"
-                    value={colors.light[key]}
-                    onChange={(e) => handleColorChange('light', key, e.target.value)}
-                  />
-                  <input
-                    type="text"
-                    value={colors.light[key]}
-                    onChange={(e) => handleColorChange('light', key, e.target.value)}
-                  />
-                </div>
-              </div>
-            ))}
-            <button onClick={() => applyTheme('light')} className="btn btn-outline">Preview Light</button>
-          </div>
-
-          <div className="theme-section">
-            <h2>Dark Mode</h2>
-            {Object.keys(colors.dark).map((key) => (
-              <div key={key} className="color-input-group">
-                <label>{key.replace(/([A-Z])/g, ' $1').trim()}</label>
-                <div className="color-input">
-                  <input
-                    type="color"
-                    value={colors.dark[key]}
-                    onChange={(e) => handleColorChange('dark', key, e.target.value)}
-                  />
-                  <input
-                    type="text"
-                    value={colors.dark[key]}
-                    onChange={(e) => handleColorChange('dark', key, e.target.value)}
-                  />
-                </div>
-              </div>
-            ))}
-            <button onClick={() => applyTheme('dark')} className="btn btn-outline">Preview Dark</button>
-          </div>
+        <div>
+          <label>Primary Color</label>
+          <input type="color" value={theme.primary_color} onChange={e => handleChange('primary_color', e.target.value)} />
         </div>
-
-        <button onClick={saveTheme} className="btn btn-primary" style={{ marginTop: '2rem' }}>
-          Save Theme
+        <div>
+          <label>Secondary Color</label>
+          <input type="color" value={theme.secondary_color} onChange={e => handleChange('secondary_color', e.target.value)} />
+        </div>
+        <div>
+          <label>Font Family</label>
+          <input type="text" value={theme.font_family} onChange={e => handleChange('font_family', e.target.value)} />
+        </div>
+        <div>
+          <label>Font Size (px)</label>
+          <input type="number" min={12} max={40} value={theme.font_size} onChange={e => handleChange('font_size', parseInt(e.target.value) || 16)} />
+        </div>
+        <button className="btn btn-primary" onClick={publishTheme} disabled={loading}>
+          {loading ? 'Publishing...' : 'Publish Theme'}
         </button>
       </div>
     </AdminLayout>
-  )
+  );
 }
 
-export default AdminTheme
+export default AdminTheme;
