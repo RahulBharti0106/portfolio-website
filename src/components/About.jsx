@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import SocialLinks from './SocialLinks'; // Check this path!
+import SocialLinks from './SocialLinks'; // Ensure this file exists in same folder!
 import './About.css';
 
 function About() {
@@ -8,22 +8,26 @@ function About() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchProfile() {
+    async function getProfile() {
       try {
-        const { data } = await supabase.from('profile').select('*').single();
-        setProfile(data);
+        const { data, error } = await supabase
+          .from('profile')
+          .select('*')
+          .single();
+
+        if (!error && data) setProfile(data);
       } catch (e) {
-        console.error(e);
+        console.warn(e);
       } finally {
         setLoading(false);
       }
     }
-    fetchProfile();
+    getProfile();
   }, []);
 
+  // Safe render checks
   if (loading) return null;
-  // If profile doesn't exist or is hidden, don't render
-  if (!profile || !profile.about_visible) return null;
+  if (!profile || profile.about_visible === false) return null;
 
   return (
     <section id="about" className="about-section">
@@ -31,7 +35,9 @@ function About() {
         <h2 className="section-title">About <span>Me</span></h2>
         <div className="about-content">
           <div className="about-text">
-            <p className="about-bio">{profile.bio_about || "Welcome to my portfolio!"}</p>
+            <p className="about-bio">
+              {profile.bio_about || "Welcome to my portfolio!"}
+            </p>
 
             <div className="about-stats">
               <div className="stat">
@@ -44,8 +50,7 @@ function About() {
               </div>
             </div>
 
-            {/* Social Links here */}
-            <div style={{ marginTop: '1.5rem' }}>
+            <div style={{ marginTop: '20px' }}>
               <SocialLinks className="about-socials" />
             </div>
           </div>

@@ -23,30 +23,31 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
 function App() {
-  // // Load theme from Supabase (with error handling)
-  // useEffect(() => {
-  //   async function loadTheme() {
-  //     try {
-  //       const { data, error } = await supabase
-  //         .from('themes')
-  //         .select('*')
-  //         .eq('is_active', true)
-  //         .maybeSingle(); // Use maybeSingle to avoid errors if no rows
+  // Load theme from Supabase (Safe Version)
+  useEffect(() => {
+    async function loadTheme() {
+      try {
+        // Safety check for supabase
+        if (!supabase) return;
 
-  //       if (data && !error) {
-  //         // Apply theme as CSS variables
-  //         if (data.primary_color) document.documentElement.style.setProperty('--bg-primary', data.primary_color);
-  //         if (data.secondary_color) document.documentElement.style.setProperty('--bg-secondary', data.secondary_color);
-  //         if (data.font_family) document.documentElement.style.setProperty('--font-family', data.font_family);
-  //         if (data.font_size) document.documentElement.style.setProperty('--font-size-base', data.font_size + 'px');
-  //       }
-  //     } catch (err) {
-  //       // Silently fail if theme doesn't exist or error occurs
-  //       console.warn('Theme not loaded, using defaults:', err);
-  //     }
-  //   }
-  //   loadTheme();
-  // }, []);
+        const { data, error } = await supabase
+          .from('themes')
+          .select('*')
+          .eq('is_active', true)
+          .maybeSingle(); // Prevents crash if 0 rows
+
+        if (data && !error) {
+          if (data.primary_color) document.documentElement.style.setProperty('--bg-primary', data.primary_color);
+          if (data.secondary_color) document.documentElement.style.setProperty('--bg-secondary', data.secondary_color);
+          if (data.font_family) document.documentElement.style.setProperty('--font-family', data.font_family);
+          if (data.font_size) document.documentElement.style.setProperty('--font-size-base', data.font_size + 'px');
+        }
+      } catch (err) {
+        console.warn('Theme load skipped:', err);
+      }
+    }
+    loadTheme();
+  }, []);
 
   return (
     <AuthProvider>
