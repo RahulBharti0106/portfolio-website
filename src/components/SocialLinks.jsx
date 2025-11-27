@@ -6,6 +6,9 @@ function SocialLinks({ className = '' }) {
     const [links, setLinks] = useState([]);
 
     useEffect(() => {
+        // Safety check for supabase
+        if (!supabase) return;
+
         supabase
             .from('social_links')
             .select('*')
@@ -17,12 +20,12 @@ function SocialLinks({ className = '' }) {
         FiGithub: FiGithub,
         FiLinkedin: FiLinkedin,
         FiMail: FiMail,
-        // Add other icons as used in your Supabase table
     };
 
-    // Render mailto, normal link, with icon
+    if (!links || links.length === 0) return null;
+
     return (
-        <div className={className}>
+        <div className={className} style={{ display: 'flex', alignItems: 'center' }}>
             {links.map(link => {
                 const Icon = iconMap[link.icon] || FiMail;
                 return (
@@ -32,7 +35,7 @@ function SocialLinks({ className = '' }) {
                         target={link.url.startsWith('mailto:') ? '_self' : '_blank'}
                         rel="noopener noreferrer"
                         aria-label={link.platform}
-                        style={{ margin: '0 0.5rem' }}
+                        style={{ margin: '0 0.5rem', color: 'inherit' }}
                     >
                         <Icon size={24} />
                     </a>
