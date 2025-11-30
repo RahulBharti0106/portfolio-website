@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiGithub, FiLinkedin, FiMail } from 'react-icons/fi'
+import { FiGithub, FiLinkedin, FiMail, FiInstagram } from 'react-icons/fi'
 import { supabase } from '../lib/supabase'
 import Cubes from './Cubes'
 import './Hero.css'
@@ -30,7 +30,8 @@ function Hero() {
   const iconMap = {
     FiGithub: FiGithub,
     FiLinkedin: FiLinkedin,
-    FiMail: FiMail
+    FiMail: FiMail,
+    FiInstagram: FiInstagram,
   }
 
   return (

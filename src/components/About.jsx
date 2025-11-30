@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { FiGithub, FiLinkedin, FiMail, FiTwitter } from 'react-icons/fi';
+import { FiGithub, FiLinkedin, FiMail, FiTwitter, FiInstagram } from 'react-icons/fi';
 import './About.css';
 
 function About() {
@@ -40,6 +40,7 @@ function About() {
       FiLinkedin: FiLinkedin,
       FiMail: FiMail,
       FiTwitter: FiTwitter,
+      FiInstagram: FiInstagram,
     };
     return icons[iconName] || FiMail;
   };
