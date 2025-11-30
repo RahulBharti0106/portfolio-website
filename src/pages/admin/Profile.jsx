@@ -14,7 +14,6 @@ function AdminProfile() {
     about_visible: true,
     location: "",
     email: "",
-    phone: "",
   });
 
   useEffect(() => {
@@ -103,15 +102,6 @@ function AdminProfile() {
               />
             </div>
 
-            <div className="form-group">
-              <label>Phone</label>
-              <input
-                type="tel"
-                name="phone"
-                value={profile.phone || ""}
-                onChange={handleChange}
-              />
-            </div>
 
             <div className="form-group">
               <label>Location</label>
