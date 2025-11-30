@@ -9,14 +9,12 @@ function AdminProfile() {
   const [profile, setProfile] = useState({
     name: "",
     tagline: "",
+    short_bio: "",
     bio_about: "",
-    experience_years: 0,
-    projects_count: 0,
     about_visible: true,
     location: "",
     email: "",
     phone: "",
-    profile_image_url: "",
   });
 
   useEffect(() => {
@@ -40,12 +38,10 @@ function AdminProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const updateProfile = { ...profile };
-    // Ensure only desired keys are sent
     try {
       const { error } = await supabase
         .from("profile")
-        .update(updateProfile)
+        .update(profile)
         .eq("id", profile.id);
       if (error) throw error;
       toast.success("Profile updated successfully!");
@@ -61,11 +57,12 @@ function AdminProfile() {
   return (
     <AdminLayout>
       <div className="admin-profile">
-        <h1>Profile/About Management</h1>
+        <h1>Profile Management</h1>
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="form-grid">
+            {/* Hero Section Fields */}
             <div className="form-group">
-              <label>Full Name</label>
+              <label>Full Name (Hero Section)</label>
               <input
                 type="text"
                 name="name"
@@ -75,7 +72,7 @@ function AdminProfile() {
             </div>
 
             <div className="form-group">
-              <label>Tagline</label>
+              <label>Tagline (Hero Section)</label>
               <input
                 type="text"
                 name="tagline"
@@ -84,6 +81,18 @@ function AdminProfile() {
               />
             </div>
 
+            <div className="form-group full-width">
+              <label>Short Bio (Hero Section)</label>
+              <textarea
+                name="short_bio"
+                value={profile.short_bio || ""}
+                onChange={handleChange}
+                rows="2"
+                placeholder="Brief intro for hero section"
+              />
+            </div>
+
+            {/* Contact Info */}
             <div className="form-group">
               <label>Email</label>
               <input
@@ -114,47 +123,16 @@ function AdminProfile() {
               />
             </div>
 
-            <div className="form-group">
-              <label>Profile Image URL</label>
-              <input
-                type="url"
-                name="profile_image_url"
-                value={profile.profile_image_url || ""}
-                onChange={handleChange}
-                placeholder="https://..."
-              />
-            </div>
 
-            {/* About fields */}
+            {/* About Section Fields */}
             <div className="form-group full-width">
-              <label>About/Bio</label>
+              <label>About Me (About Section Description)</label>
               <textarea
                 name="bio_about"
                 value={profile.bio_about || ""}
                 onChange={handleChange}
-                rows="4"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Years Experience</label>
-              <input
-                type="number"
-                name="experience_years"
-                value={profile.experience_years || 0}
-                onChange={handleChange}
-                min={0}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Projects Count</label>
-              <input
-                type="number"
-                name="projects_count"
-                value={profile.projects_count || 0}
-                onChange={handleChange}
-                min={0}
+                rows="6"
+                placeholder="Write a detailed description about yourself for the About section"
               />
             </div>
 
@@ -170,7 +148,7 @@ function AdminProfile() {
                   }
                   onChange={handleChange}
                 />{" "}
-                Show About Section on Main Website
+                Show About Section on Website
               </label>
             </div>
           </div>

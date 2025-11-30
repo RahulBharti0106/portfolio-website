@@ -1,29 +1,48 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import SocialLinks from './SocialLinks'; // Ensure this file exists in same folder!
+import { FiGithub, FiLinkedin, FiMail, FiTwitter } from 'react-icons/fi';
 import './About.css';
 
 function About() {
   const [profile, setProfile] = useState(null);
+  const [socials, setSocials] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function getProfile() {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase
+        const { data: profileData } = await supabase
           .from('profile')
           .select('*')
           .single();
 
-        if (!error && data) setProfile(data);
+        const { data: socialsData } = await supabase
+          .from('social_links')
+          .select('*')
+          .eq('visible', true)
+          .order('id');
+
+        if (profileData) setProfile(profileData);
+        if (socialsData) setSocials(socialsData);
       } catch (e) {
         console.warn(e);
       } finally {
         setLoading(false);
       }
     }
-    getProfile();
+    fetchData();
   }, []);
+
+  // Icon mapping for social links
+  const getIcon = (iconName) => {
+    const icons = {
+      FiGithub: FiGithub,
+      FiLinkedin: FiLinkedin,
+      FiMail: FiMail,
+      FiTwitter: FiTwitter,
+    };
+    return icons[iconName] || FiMail;
+  };
 
   // Safe render checks
   if (loading) return null;
@@ -34,24 +53,33 @@ function About() {
       <div className="container">
         <h2 className="section-title">About <span>Me</span></h2>
         <div className="about-content">
+          {/* Left: Bio Text */}
           <div className="about-text">
             <p className="about-bio">
               {profile.bio_about || "Welcome to my portfolio!"}
             </p>
+          </div>
 
-            <div className="about-stats">
-              <div className="stat">
-                <h3>{profile.experience_years || 0}+</h3>
-                <p>Years Exp</p>
-              </div>
-              <div className="stat">
-                <h3>{profile.projects_count || 0}+</h3>
-                <p>Projects</p>
-              </div>
-            </div>
+          {/* Right: Animated Social Card */}
+          <div className="social-card-wrapper">
+            <div className="card">
+              <div className="background"></div>
+              <div className="logo">Socials</div>
 
-            <div style={{ marginTop: '20px' }}>
-              <SocialLinks className="about-socials" />
+              {socials.slice(0, 3).map((social, index) => {
+                const Icon = getIcon(social.icon);
+                return (
+                  <a key={social.id} href={social.url} target="_blank" rel="noopener noreferrer">
+                    <div className={`box box${index + 1}`}>
+                      <span className="icon">
+                        <Icon className="svg" />
+                      </span>
+                    </div>
+                  </a>
+                );
+              })}
+
+              <div className="box box4" />
             </div>
           </div>
         </div>

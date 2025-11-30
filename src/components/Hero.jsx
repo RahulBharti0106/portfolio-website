@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiGithub, FiLinkedin, FiMail, FiArrowDown } from 'react-icons/fi'
+import { FiGithub, FiLinkedin, FiMail } from 'react-icons/fi'
 import { supabase } from '../lib/supabase'
+import Cubes from './Cubes'
 import './Hero.css'
 
 function Hero() {
@@ -14,8 +15,12 @@ function Hero() {
 
   const fetchData = async () => {
     const { data: profileData } = await supabase.from('profile').select('*').single()
-    const { data: socialsData } = await supabase.from('social_links').select('*').eq('is_visible', true).order('display_order')
-    
+    const { data: socialsData } = await supabase
+      .from('social_links')
+      .select('*')
+      .eq('visible', true)
+      .order('id')
+
     setProfile(profileData)
     setSocials(socialsData || [])
   }
@@ -30,14 +35,14 @@ function Hero() {
 
   return (
     <section id="home" className="hero">
-      <div className="hero-background">
-        <div className="floating-shape shape-1"></div>
-        <div className="floating-shape shape-2"></div>
-        <div className="floating-shape shape-3"></div>
-      </div>
-
-      <div className="hero-content">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+      <div className="hero-container">
+        {/* Left Side: Content */}
+        <motion.div
+          className="hero-content"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <p className="hero-greeting">Hi, I'm</p>
           <h1 className="hero-name">{profile.name}</h1>
           <h2 className="hero-title">{profile.tagline}</h2>
@@ -59,11 +64,27 @@ function Hero() {
             })}
           </div>
         </motion.div>
-      </div>
 
-      <a href="#about" className="scroll-indicator">
-        <FiArrowDown size={24} />
-      </a>
+        {/* Right Side: Animated Cubes */}
+        <motion.div
+          className="hero-cubes"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Cubes
+            gridSize={7}
+            maxAngle={60}
+            radius={4}
+            borderStyle="2px dashed rgba(99, 102, 241, 0.5)"
+            faceColor="rgba(26, 26, 46, 0.6)"
+            rippleColor="#6366f1"
+            rippleSpeed={1.5}
+            autoAnimate={true}
+            rippleOnClick={true}
+          />
+        </motion.div>
+      </div>
     </section>
   )
 }

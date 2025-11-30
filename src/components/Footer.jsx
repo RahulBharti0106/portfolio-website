@@ -1,12 +1,16 @@
 import './Footer.css';
-import SocialLinks from './SocialLinks'; // Ensure this file exists in same folder!
 
 function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p>&copy; {new Date().getFullYear()} Rahul Bharti. All rights reserved.</p>
-        <SocialLinks className="footer-socials" />
+        <div className="footer-brand">
+          <h3>Rahul Bharti</h3>
+          <p>Building beautiful web experiences</p>
+        </div>
+        <div className="footer-text">
+          <p>&copy; {new Date().getFullYear()} Rahul Bharti. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );

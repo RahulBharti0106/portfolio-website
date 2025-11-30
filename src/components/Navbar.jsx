@@ -54,9 +54,9 @@ function Navbar() {
         {/* Desktop Menu */}
         <div className="nav-links desktop">
           <a href="#home">Home</a>
-          <a href="#about">About</a>
           <a href="#skills">Skills</a>
           <a href="#projects">Projects</a>
+          <a href="#about">About</a>
           <a href="#contact">Contact</a>
 
           <button
@@ -79,9 +79,9 @@ function Navbar() {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="nav-links mobile">
-            <a href="#about" onClick={() => setIsOpen(false)}>About</a>
             <a href="#skills" onClick={() => setIsOpen(false)}>Skills</a>
             <a href="#projects" onClick={() => setIsOpen(false)}>Projects</a>
+            <a href="#about" onClick={() => setIsOpen(false)}>About</a>
             <a href="#contact" onClick={() => setIsOpen(false)}>Contact</a>
             <button
               onClick={() => { toggleTheme(); setIsOpen(false); }}

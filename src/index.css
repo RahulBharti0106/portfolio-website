@@ -87,3 +87,20 @@ section {
     font-size: 2rem;
   }
 }
+
+/* Remove scrollbar but keep scrolling functionality */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+html {
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+}
