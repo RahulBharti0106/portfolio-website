@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from '../../components/admin/AdminLayout'
 import toast from 'react-hot-toast'
-import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiStar } from 'react-icons/fi'
+import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiStar, FiUpload } from 'react-icons/fi'
 import './Projects.css'
 
 function AdminProjects() {
   const [projects, setProjects] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     short_description: '',
@@ -32,6 +33,52 @@ function AdminProjects() {
       .select('*')
       .order('display_order')
     setProjects(data || [])
+  }
+
+  const handleImageUpload = async (e) => {
+    try {
+      const file = e.target.files[0]
+      if (!file) return
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file')
+        return
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image must be less than 5MB')
+        return
+      }
+
+      setUploading(true)
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
+      const filePath = `project-images/${fileName}`
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('portfolio-assets')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio-assets')
+        .getPublicUrl(filePath)
+
+      setFormData({ ...formData, featured_image_url: publicUrl })
+      toast.success('Image uploaded successfully!')
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Failed to upload image: ' + error.message)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -163,8 +210,32 @@ function AdminProjects() {
                 </div>
 
                 <div className="form-group">
-                  <label>Featured Image URL</label>
-                  <input type="url" value={formData.featured_image_url || ''} onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })} />
+                  <label>Featured Image</label>
+                  <div className="image-upload-section">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      id="image-upload"
+                      style={{ display: 'none' }}
+                    />
+                    <label htmlFor="image-upload" className="btn btn-outline upload-btn">
+                      <FiUpload /> {uploading ? 'Uploading...' : 'Upload Image'}
+                    </label>
+                    {formData.featured_image_url && (
+                      <div className="image-preview">
+                        <img src={formData.featured_image_url} alt="Preview" />
+                      </div>
+                    )}
+                    <input
+                      type="url"
+                      value={formData.featured_image_url || ''}
+                      onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
+                      placeholder="Or paste image URL"
+                      style={{ marginTop: '10px' }}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -195,7 +266,9 @@ function AdminProjects() {
 
                 <div className="modal-actions">
                   <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="btn btn-outline">Cancel</button>
-                  <button type="submit" className="btn btn-primary">{editingProject ? 'Update' : 'Add'} Project</button>
+                  <button type="submit" className="btn btn-primary" disabled={uploading}>
+                    {uploading ? 'Uploading...' : editingProject ? 'Update Project' : 'Add Project'}
+                  </button>
                 </div>
               </form>
             </div>
