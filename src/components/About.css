@@ -188,7 +188,13 @@
   height: 0%;
   bottom: -10%;
   left: -10%;
+  pointer-events: none;
   transition-delay: 0.2s;
+  visibility: hidden;
+}
+
+.box5:hover::before {
+  opacity: 0;
 }
 
 .card:hover {
@@ -223,5 +229,11 @@
 
   .logo {
     font-size: 1.3em;
+  }
+
+
+  /* Hide social card completely on mobile */
+  .social-card-wrapper {
+    display: none;
   }
 }
