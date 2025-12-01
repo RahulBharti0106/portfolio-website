@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { FiGithub, FiLinkedin, FiMail, FiTwitter, FiInstagram } from 'react-icons/fi';
+import { TbBrandTelegram } from "react-icons/tb";
+import { FiGithub, FiLinkedin, FiMail, FiTwitter, FiInstagram, } from 'react-icons/fi';
 import './About.css';
 
 function About() {
@@ -38,9 +39,10 @@ function About() {
     const icons = {
       FiGithub: FiGithub,
       FiLinkedin: FiLinkedin,
+      FiInstagram: FiInstagram,
+      TbBrandTelegram: TbBrandTelegram,
       FiMail: FiMail,
       FiTwitter: FiTwitter,
-      FiInstagram: FiInstagram,
     };
     return icons[iconName] || FiMail;
   };
@@ -67,7 +69,7 @@ function About() {
               <div className="background"></div>
               <div className="logo">Socials</div>
 
-              {socials.slice(0, 3).map((social, index) => {
+              {socials.slice(0, 4).map((social, index) => {
                 const Icon = getIcon(social.icon);
                 return (
                   <a key={social.id} href={social.url} target="_blank" rel="noopener noreferrer">
@@ -80,7 +82,7 @@ function About() {
                 );
               })}
 
-              <div className="box box4" />
+              <div className="box box5" />
             </div>
           </div>
         </div>

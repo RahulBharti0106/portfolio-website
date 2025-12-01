@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { TbBrandTelegram } from "react-icons/tb";
 import { FiGithub, FiLinkedin, FiMail, FiInstagram } from 'react-icons/fi'
 import { supabase } from '../lib/supabase'
 import Cubes from './Cubes'
@@ -31,6 +32,7 @@ function Hero() {
     FiGithub: FiGithub,
     FiLinkedin: FiLinkedin,
     FiMail: FiMail,
+    TbBrandTelegram: TbBrandTelegram,
     FiInstagram: FiInstagram,
   }
 
