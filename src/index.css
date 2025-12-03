@@ -4,6 +4,7 @@
   box-sizing: border-box;
 }
 
+/* Base theme variables (light mode defaults) */
 :root {
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
@@ -13,21 +14,37 @@
   --text-accent: #6366f1;
   --border-color: #e5e7eb;
   --shadow: rgba(0, 0, 0, 0.1);
+
+  /* Theme system variables for dynamic colors */
+  --light-bg-primary: #ffffff;
+  --light-bg-secondary: #f8f9fa;
+  --light-accent: #6366f1;
+  --light-text-primary: #1a1a1a;
+  --light-text-secondary: #6b7280;
+
+  --dark-bg-primary: #0a0a0a;
+  --dark-bg-secondary: #1a1a1a;
+  --dark-accent: #6366f1;
+  --dark-text-primary: #ffffff;
+  --dark-text-secondary: #9ca3af;
 }
 
+/* When body has dark-mode class, override main tokens */
 body.dark-mode {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #1a1a1a;
-  --bg-accent: #6366f1;
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
+  --bg-primary: var(--dark-bg-primary);
+  --bg-secondary: var(--dark-bg-secondary);
+  --bg-accent: var(--dark-accent);
+  --text-primary: var(--dark-text-primary);
+  --text-secondary: var(--dark-text-secondary);
   --text-accent: #818cf8;
   --border-color: #2d2d2d;
   --shadow: rgba(0, 0, 0, 0.5);
 }
 
+/* Global typography is FIXED, not theme-based */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
@@ -65,7 +82,6 @@ section {
     font-size: 2rem;
   }
 }
-
 
 .section-title {
   font-size: 2.5rem;
