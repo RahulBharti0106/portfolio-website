@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import AdminLayout from '../../components/admin/AdminLayout'
 import toast from 'react-hot-toast'
 import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi'
+import { getSkillIcon, getAvailableIcons } from '../../utils/skillIcons'
 import './Skills.css'
 
 function AdminSkills() {
@@ -11,12 +12,15 @@ function AdminSkills() {
   const [editingSkill, setEditingSkill] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
-    icon: '',
+    icon: 'FaCode',
     category: 'Frontend',
     proficiency: 50,
     description: '',
     is_visible: true
   })
+
+  // Get all available icons for dropdown
+  const availableIcons = getAvailableIcons()
 
   useEffect(() => {
     fetchSkills()
@@ -27,7 +31,7 @@ function AdminSkills() {
       .from('skills')
       .select('*')
       .order('display_order', { ascending: true })
-    
+
     if (error) {
       toast.error('Error fetching skills')
     } else {
@@ -44,18 +48,18 @@ function AdminSkills() {
           .from('skills')
           .update(formData)
           .eq('id', editingSkill.id)
-        
+
         if (error) throw error
         toast.success('Skill updated!')
       } else {
         const { error } = await supabase
           .from('skills')
           .insert([{ ...formData, display_order: skills.length + 1 }])
-        
+
         if (error) throw error
         toast.success('Skill added!')
       }
-      
+
       setShowModal(false)
       setEditingSkill(null)
       resetForm()
@@ -80,7 +84,7 @@ function AdminSkills() {
         .from('skills')
         .delete()
         .eq('id', id)
-      
+
       if (error) throw error
       toast.success('Skill deleted')
       fetchSkills()
@@ -95,7 +99,7 @@ function AdminSkills() {
         .from('skills')
         .update({ is_visible: !skill.is_visible })
         .eq('id', skill.id)
-      
+
       if (error) throw error
       toast.success(skill.is_visible ? 'Skill hidden' : 'Skill visible')
       fetchSkills()
@@ -107,7 +111,7 @@ function AdminSkills() {
   const resetForm = () => {
     setFormData({
       name: '',
-      icon: '',
+      icon: 'FaCode',
       category: 'Frontend',
       proficiency: 50,
       description: '',
@@ -121,6 +125,15 @@ function AdminSkills() {
     setShowModal(true)
   }
 
+  // Group icons by category for better dropdown organization
+  const groupedIcons = availableIcons.reduce((acc, icon) => {
+    if (!acc[icon.category]) {
+      acc[icon.category] = []
+    }
+    acc[icon.category].push(icon)
+    return acc
+  }, {})
+
   return (
     <AdminLayout>
       <div className="admin-skills">
@@ -132,29 +145,35 @@ function AdminSkills() {
         </div>
 
         <div className="skills-grid">
-          {skills.map((skill) => (
-            <div key={skill.id} className={`skill-card ${!skill.is_visible ? 'hidden' : ''}`}>
-              <div className="skill-icon">{skill.icon}</div>
-              <h3>{skill.name}</h3>
-              <p className="skill-category">{skill.category}</p>
-              <div className="skill-bar">
-                <div className="skill-progress" style={{ width: `${skill.proficiency}%` }}>
-                  {skill.proficiency}%
+          {skills.map((skill) => {
+            const IconComponent = getSkillIcon(skill.icon)
+
+            return (
+              <div key={skill.id} className={`skill-card ${!skill.is_visible ? 'hidden' : ''}`}>
+                <div className="skill-icon">
+                  <IconComponent size={48} />
+                </div>
+                <h3>{skill.name}</h3>
+                <p className="skill-category">{skill.category}</p>
+                <div className="skill-bar">
+                  <div className="skill-progress" style={{ width: `${skill.proficiency}%` }}>
+                    {skill.proficiency}%
+                  </div>
+                </div>
+                <div className="skill-actions">
+                  <button onClick={() => toggleVisibility(skill)} className="btn-icon">
+                    {skill.is_visible ? <FiEye /> : <FiEyeOff />}
+                  </button>
+                  <button onClick={() => handleEdit(skill)} className="btn-icon">
+                    <FiEdit2 />
+                  </button>
+                  <button onClick={() => handleDelete(skill.id)} className="btn-icon danger">
+                    <FiTrash2 />
+                  </button>
                 </div>
               </div>
-              <div className="skill-actions">
-                <button onClick={() => toggleVisibility(skill)} className="btn-icon">
-                  {skill.is_visible ? <FiEye /> : <FiEyeOff />}
-                </button>
-                <button onClick={() => handleEdit(skill)} className="btn-icon">
-                  <FiEdit2 />
-                </button>
-                <button onClick={() => handleDelete(skill.id)} className="btn-icon danger">
-                  <FiTrash2 />
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {showModal && (
@@ -173,13 +192,28 @@ function AdminSkills() {
                 </div>
 
                 <div className="form-group">
-                  <label>Icon (emoji)</label>
-                  <input
-                    type="text"
+                  <label>Icon (SVG)</label>
+                  <select
                     value={formData.icon}
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    placeholder="🚀"
-                  />
+                    style={{ padding: '0.75rem', fontSize: '1rem' }}
+                  >
+                    {Object.keys(groupedIcons).map(category => (
+                      <optgroup key={category} label={category}>
+                        {groupedIcons[category].map(icon => (
+                          <option key={icon.value} value={icon.value}>
+                            {icon.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--text-secondary)' }}>
+                    Preview: {(() => {
+                      const PreviewIcon = getSkillIcon(formData.icon)
+                      return <PreviewIcon size={24} style={{ verticalAlign: 'middle', marginLeft: '8px' }} />
+                    })()}
+                  </small>
                 </div>
 
                 <div className="form-group">
@@ -190,7 +224,11 @@ function AdminSkills() {
                   >
                     <option value="Frontend">Frontend</option>
                     <option value="Backend">Backend</option>
+                    <option value="Database">Database</option>
+                    <option value="DevOps">DevOps</option>
                     <option value="Tools">Tools</option>
+                    <option value="Design">Design</option>
+                    <option value="Mobile">Mobile</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>

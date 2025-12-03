@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FiMenu, FiX, FiMoon, FiSun } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
@@ -7,8 +7,9 @@ import './Navbar.css';
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const themeCache = useRef(null); // Cache theme data to avoid refetching
 
-  // Load theme from Supabase and apply
+  // Load theme from Supabase ONCE on mount
   useEffect(() => {
     const loadTheme = async () => {
       try {
@@ -19,36 +20,33 @@ function Navbar() {
           .maybeSingle();
 
         if (!error && data) {
-          // Get stored preference or default to dark
-          const storedTheme = localStorage.getItem('theme');
-          const isDarkMode = storedTheme === 'light' ? false : true;
-          setIsDark(isDarkMode);
-          applyTheme(isDarkMode, data);
-        } else {
-          // Fallback: load from localStorage only
-          const storedTheme = localStorage.getItem('theme');
-          const isDarkMode = storedTheme === 'light' ? false : true;
-          setIsDark(isDarkMode);
-          applyTheme(isDarkMode, null);
+          themeCache.current = data; // Cache the theme
         }
+
+        // Get stored preference or default to dark
+        const storedTheme = localStorage.getItem('theme');
+        const isDarkMode = storedTheme === 'light' ? false : true;
+        setIsDark(isDarkMode);
+        applyTheme(isDarkMode);
       } catch (err) {
         console.warn('Theme load error:', err);
         // Fallback to localStorage
         const storedTheme = localStorage.getItem('theme');
         const isDarkMode = storedTheme === 'light' ? false : true;
         setIsDark(isDarkMode);
-        applyTheme(isDarkMode, null);
+        applyTheme(isDarkMode);
       }
     };
     loadTheme();
   }, []);
 
-  // Apply theme function - uses Supabase colors or defaults
-  const applyTheme = (isDark, themeData) => {
+  // Apply theme function - uses cached theme or defaults
+  const applyTheme = (isDark) => {
     const root = document.documentElement;
+    const themeData = themeCache.current;
 
     if (themeData) {
-      // Use colors from Supabase
+      // Use colors from cached Supabase theme
       if (isDark) {
         root.style.setProperty('--bg-primary', themeData.dark_bg_primary);
         root.style.setProperty('--bg-secondary', themeData.dark_bg_secondary);
@@ -92,25 +90,12 @@ function Navbar() {
     root.style.setProperty('--shadow', isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)');
   };
 
-  // Toggle Handler - same as before, just reloads theme from DB
-  const toggleTheme = async () => {
+  // Toggle Handler - INSTANT (uses cached theme)
+  const toggleTheme = () => {
     const newMode = !isDark;
     setIsDark(newMode);
     localStorage.setItem('theme', newMode ? 'dark' : 'light');
-
-    // Reload theme from Supabase to apply custom colors
-    try {
-      const { data } = await supabase
-        .from('themes')
-        .select('*')
-        .eq('is_active', true)
-        .maybeSingle();
-
-      applyTheme(newMode, data);
-    } catch (err) {
-      // Fallback if DB fails
-      applyTheme(newMode, null);
-    }
+    applyTheme(newMode); // Uses cached theme, no API call
   };
 
   return (

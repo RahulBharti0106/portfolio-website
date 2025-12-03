@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { getSkillIcon } from '../utils/skillIcons';
 import './Skills.css';
 
 function Skills() {
@@ -30,9 +31,6 @@ function Skills() {
 
   useEffect(() => {
     fetchSkills();
-    // Optionally: setup an interval to auto-refresh skills every X seconds if you want "live" updates:
-    // const interval = setInterval(fetchSkills, 5000);
-    // return () => clearInterval(interval);
   }, []);
 
   const container = {
@@ -56,18 +54,25 @@ function Skills() {
     <section id="skills" className="skills-section">
       <h2 className="section-title">My <span>Skills</span></h2>
       <motion.div className="skills-grid" variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
-        {skills.map(skill => (
-          <motion.div key={skill.id} className="skill-card" variants={item}>
-            <div className="skill-icon" style={{ fontSize: '3rem' }}>{skill.icon}</div>
-            <h3 className="skill-name">{skill.name}</h3>
-            <p className="skill-category">{skill.category}</p>
-            <div className="skill-bar">
-              <div className="skill-progress" style={{ width: `${skill.proficiency}%` }}>
-                <span className="skill-percent">{skill.proficiency}%</span>
+        {skills.map(skill => {
+          // Get SVG icon component from mapping
+          const IconComponent = getSkillIcon(skill.icon);
+
+          return (
+            <motion.div key={skill.id} className="skill-card" variants={item}>
+              <div className="skill-icon">
+                <IconComponent size={48} />
               </div>
-            </div>
-          </motion.div>
-        ))}
+              <h3 className="skill-name">{skill.name}</h3>
+              <p className="skill-category">{skill.category}</p>
+              <div className="skill-bar">
+                <div className="skill-progress" style={{ width: `${skill.proficiency}%` }}>
+                  <span className="skill-percent">{skill.proficiency}%</span>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </motion.div>
     </section>
   );
