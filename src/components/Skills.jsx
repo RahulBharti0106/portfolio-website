@@ -55,12 +55,14 @@ function Skills() {
       <h2 className="section-title">My <span>Skills</span></h2>
       <motion.div className="skills-grid" variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
         {skills.map(skill => {
-          // Get SVG icon component from mapping
-          const IconComponent = getSkillIcon(skill.icon);
+          // Get SVG icon component and color from mapping
+          const iconData = getSkillIcon(skill.icon);
+          const IconComponent = iconData.icon;
+          const iconColor = iconData.color;
 
           return (
             <motion.div key={skill.id} className="skill-card" variants={item}>
-              <div className="skill-icon">
+              <div className="skill-icon" style={{ color: iconColor }}>
                 <IconComponent size={48} />
               </div>
               <h3 className="skill-name">{skill.name}</h3>

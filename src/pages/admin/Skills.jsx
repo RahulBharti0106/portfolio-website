@@ -146,11 +146,13 @@ function AdminSkills() {
 
         <div className="skills-grid">
           {skills.map((skill) => {
-            const IconComponent = getSkillIcon(skill.icon)
+            const iconData = getSkillIcon(skill.icon)
+            const IconComponent = iconData.icon
+            const iconColor = iconData.color
 
             return (
               <div key={skill.id} className={`skill-card ${!skill.is_visible ? 'hidden' : ''}`}>
-                <div className="skill-icon">
+                <div className="skill-icon" style={{ color: iconColor }}>
                   <IconComponent size={48} />
                 </div>
                 <h3>{skill.name}</h3>
@@ -192,7 +194,7 @@ function AdminSkills() {
                 </div>
 
                 <div className="form-group">
-                  <label>Icon (SVG)</label>
+                  <label>Icon (SVG with Official Colors)</label>
                   <select
                     value={formData.icon}
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
@@ -208,12 +210,35 @@ function AdminSkills() {
                       </optgroup>
                     ))}
                   </select>
-                  <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--text-secondary)' }}>
-                    Preview: {(() => {
-                      const PreviewIcon = getSkillIcon(formData.icon)
-                      return <PreviewIcon size={24} style={{ verticalAlign: 'middle', marginLeft: '8px' }} />
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginTop: '0.75rem',
+                    padding: '0.75rem',
+                    background: 'var(--bg-secondary)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Preview:</span>
+                    {(() => {
+                      const iconData = getSkillIcon(formData.icon)
+                      const PreviewIcon = iconData.icon
+                      const iconColor = iconData.color
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <PreviewIcon size={32} style={{ color: iconColor }} />
+                          <span style={{
+                            fontSize: '0.85rem',
+                            color: 'var(--text-secondary)',
+                            fontFamily: 'monospace'
+                          }}>
+                            {iconColor}
+                          </span>
+                        </div>
+                      )
                     })()}
-                  </small>
+                  </div>
                 </div>
 
                 <div className="form-group">
