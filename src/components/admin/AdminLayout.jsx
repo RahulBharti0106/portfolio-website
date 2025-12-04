@@ -1,50 +1,84 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
-import toast from 'react-hot-toast'
-import { FiHome, FiUser, FiCode, FiBriefcase, FiMail, FiSettings, FiLink, FiLogOut } from 'react-icons/fi'
-import './AdminLayout.css'
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import {
+  FiHome, FiUser, FiCode, FiFolder, FiMessageSquare,
+  FiSettings, FiLogOut, FiShare2, FiMenu, FiX, FiLayout
+} from 'react-icons/fi';
+import { useState } from 'react';
+import './AdminLayout.css';
 
 function AdminLayout({ children }) {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { signOut } = useAuth()
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await signOut()
-      toast.success('Logged out')
-      navigate('/admin/login')
-    } catch (error) {
-      toast.error('Error logging out')
-    }
-  }
+    await signOut();
+    navigate('/admin/login');
+  };
 
-  const menuItems = [
-    { path: '/admin', icon: FiHome, label: 'Dashboard' },
+  const navItems = [
+    { path: '/admin', icon: FiHome, label: 'Dashboard', exact: true },
     { path: '/admin/profile', icon: FiUser, label: 'Profile' },
     { path: '/admin/skills', icon: FiCode, label: 'Skills' },
-    { path: '/admin/projects', icon: FiBriefcase, label: 'Projects' },
-    { path: '/admin/messages', icon: FiMail, label: 'Messages' },
+    { path: '/admin/projects', icon: FiFolder, label: 'Projects' },
+    { path: '/admin/social', icon: FiShare2, label: 'Social Links' },
+    { path: '/admin/footer', icon: FiLayout, label: 'Footer' },
+    { path: '/admin/messages', icon: FiMessageSquare, label: 'Messages' },
     { path: '/admin/theme', icon: FiSettings, label: 'Theme' },
-    { path: '/admin/social', icon: FiLink, label: 'Social' },
-  ]
+  ];
 
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="sidebar-header"><h2>Admin Panel</h2></div>
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+      </button>
+
+      {/* Sidebar */}
+      <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <h2>Admin Panel</h2>
+        </div>
+
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <Link key={item.path} to={item.path} className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}>
-              <item.icon size={20} /><span>{item.label}</span>
-            </Link>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => setIsSidebarOpen(false)}
+              end={item.exact}
+            >
+              <item.icon size={20} />
+              <span>{item.label}</span>
+            </NavLink>
           ))}
         </nav>
-        <button onClick={handleLogout} className="logout-btn"><FiLogOut size={20} /><span>Logout</span></button>
+
+        <button onClick={handleLogout} className="logout-btn">
+          <FiLogOut size={20} />
+          <span>Logout</span>
+        </button>
       </aside>
-      <main className="admin-main">{children}</main>
+
+      {/* Main Content */}
+      <main className="admin-content">
+        {children}
+      </main>
+
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
     </div>
-  )
+  );
 }
 
-export default AdminLayout
+export default AdminLayout;

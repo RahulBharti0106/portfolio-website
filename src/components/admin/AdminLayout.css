@@ -1,6 +1,6 @@
 /* Force dark mode for admin panel */
 .admin-layout,
-.admin-layout * {
+.admin-layout *:not(input[type="color"]) {
   --bg-primary: #0f0f0f !important;
   --bg-secondary: #1a1a1a !important;
   --bg-card: #2a2a2a !important;
@@ -10,20 +10,20 @@
   --text-accent: #818cf8 !important;
   --border-color: #3a3a3a !important;
   --shadow: rgba(0, 0, 0, 0.5) !important;
-
-  /* Ensure text is always visible */
-  color: var(--text-primary) !important;
 }
 
-/* Admin panel uses FIXED font (not affected by theme changes) */
+/* Admin Layout */
 .admin-layout {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 16px !important;
   display: flex;
   min-height: 100vh;
   background: var(--bg-primary);
+  position: relative;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 16px !important;
+  color: var(--text-primary) !important;
 }
 
+/* Sidebar */
 .admin-sidebar {
   width: 260px;
   background: var(--bg-secondary);
@@ -31,7 +31,11 @@
   display: flex;
   flex-direction: column;
   position: fixed;
+  left: 0;
+  top: 0;
   height: 100vh;
+  z-index: 100;
+  overflow-y: auto;
 }
 
 .sidebar-header {
@@ -40,31 +44,43 @@
 }
 
 .sidebar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0;
 }
 
+/* Sidebar Navigation */
 .sidebar-nav {
   flex: 1;
   padding: 1rem 0;
+  overflow-y: auto;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   color: var(--text-secondary);
-  transition: all 0.3s;
   text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-.nav-item:hover,
+.nav-item:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 .nav-item.active {
   background: var(--bg-primary);
   color: var(--text-accent);
+  border-right: 3px solid var(--text-accent);
 }
 
+/* Logout Button */
 .logout-btn {
   display: flex;
   align-items: center;
@@ -76,77 +92,158 @@
   color: #ef4444;
   cursor: pointer;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.1);
 }
 
-.admin-main {
+/* Main Content Area */
+.admin-content {
   flex: 1;
   margin-left: 260px;
   padding: 2rem;
-  background: var(--bg-primary);
   min-height: 100vh;
+  width: calc(100% - 260px);
+  overflow-x: hidden;
+  background: var(--bg-primary);
 }
 
-/* Force visibility on all common elements */
-.admin-main h1,
-.admin-main h2,
-.admin-main h3,
-.admin-main h4,
-.admin-main h5,
-.admin-main h6 {
+/* Force text visibility */
+.admin-content h1,
+.admin-content h2,
+.admin-content h3,
+.admin-content h4,
+.admin-content h5,
+.admin-content h6,
+.admin-content p,
+.admin-content span,
+.admin-content label,
+.admin-content div {
   color: var(--text-primary) !important;
 }
 
-.admin-main p,
-.admin-main span,
-.admin-main label,
-.admin-main div {
-  color: var(--text-primary) !important;
-}
-
-/* Dashboard cards */
-.admin-main .stat-card,
-.admin-main [class*="card"],
-.admin-main [class*="Card"] {
+/* Cards and containers */
+.admin-content .stat-card,
+.admin-content [class*="card"],
+.admin-content [class*="Card"],
+.admin-content [class*="section"],
+.admin-content [class*="box"],
+.admin-content [class*="container"] {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-color) !important;
   color: var(--text-primary) !important;
 }
 
 /* Input fields */
-.admin-main input,
-.admin-main textarea,
-.admin-main select {
+.admin-content input:not([type="color"]),
+.admin-content textarea,
+.admin-content select {
   background: var(--bg-card) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-color) !important;
 }
 
-.admin-main input::placeholder,
-.admin-main textarea::placeholder {
+.admin-content input::placeholder,
+.admin-content textarea::placeholder {
   color: var(--text-secondary) !important;
+  opacity: 0.7;
 }
 
-/* Buttons */
-.admin-main button {
-  color: var(--text-primary) !important;
-}
-
-/* Make sure color inputs are visible */
-.admin-main input[type="color"] {
+/* Color inputs - special handling */
+.admin-content input[type="color"] {
   background: var(--bg-card) !important;
   border: 2px solid var(--border-color) !important;
   min-height: 50px;
   cursor: pointer;
 }
 
-/* Theme page specific fixes */
-.admin-main [class*="theme"],
-.admin-main [class*="color"] {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-color) !important;
+/* Buttons */
+.admin-content button {
+  color: var(--text-primary) !important;
+}
+
+.admin-content .btn-primary {
+  background: var(--bg-accent) !important;
+  color: white !important;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 200;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+  /* Hide sidebar by default on mobile */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Show mobile menu toggle */
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  /* Remove left margin on mobile */
+  .admin-content {
+    margin-left: 0;
+    width: 100%;
+    padding-top: 4rem;
+  }
+
+  /* Show overlay when sidebar is open */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+
+  /* Hide overlay when sidebar is closed */
+  .admin-sidebar:not(.open)~.sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Scrollbar styling for sidebar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }

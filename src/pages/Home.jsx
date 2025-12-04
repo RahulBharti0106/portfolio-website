@@ -1,15 +1,15 @@
-import Navbar from '../components/Navbar'
-import Hero from '../components/Hero'
-import Skills from '../components/Skills'
-import Projects from '../components/Projects'
-import About from '../components/About'
-import Contact from '../components/Contact'
-import Footer from '../components/Footer'
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import Skills from '../components/Skills';
+import Projects from '../components/Projects';
+import About from '../components/About';
+import Contact from '../components/Contact';
+import Footer from '../components/Footer';
 
-function Home({ darkMode, toggleTheme }) {
+function Home() {
   return (
-    <div className="app">
-      <Navbar darkMode={darkMode} toggleTheme={toggleTheme} />
+    <div className="home">
+      <Navbar />
       <Hero />
       <Skills />
       <Projects />
@@ -17,7 +17,7 @@ function Home({ darkMode, toggleTheme }) {
       <Contact />
       <Footer />
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

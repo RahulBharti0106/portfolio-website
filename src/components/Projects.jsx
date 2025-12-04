@@ -19,7 +19,7 @@ function Projects() {
   return (
     <section id="projects" className="projects-section">
       <h2 className="section-title">Featured <span>Projects</span></h2>
-      
+
       <div className="projects-grid">
         {projects.map((project) => (
           <div key={project.id} className="project-card">
@@ -40,11 +40,11 @@ function Projects() {
                 </div>
               </div>
             </div>
-            
+
             <div className="project-content">
               <h3 className="project-title">{project.title}</h3>
               <p className="project-description">{project.short_description}</p>
-              
+
               <div className="project-tech">
                 {project.tech_stack?.map((tech, i) => (
                   <span key={i} className="tech-tag">{tech}</span>
