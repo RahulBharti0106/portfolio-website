@@ -1,192 +1,174 @@
-/* --- SLIDER WRAPPER WITH ARROWS --- */
+/* --- SCOPED TO PUBLIC SKILLS SECTION ONLY --- */
+.skills-section {
+  width: 100%;
+  position: relative;
+  /* Ensure section has room for hover effects */
+  overflow: visible;
+}
 
-.skills-slider-wrapper {
+/* --- SLIDER WRAPPER --- */
+.skills-section .skills-slider-wrapper {
   position: relative;
   width: 100%;
-  padding: 3rem 0;
+  /* Increased top/bottom padding to prevent vertical hover clipping */
+  padding: 4rem 0;
 }
 
 /* --- SCROLLABLE CONTAINER --- */
-
-.skills-track-container {
+.skills-section .skills-track-container {
   width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
+  /* Allow vertical overflow for hover effects */
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
-
-  /* Hide scrollbar for cleaner look */
   scrollbar-width: none;
-  /* Firefox */
   -ms-overflow-style: none;
-  /* IE/Edge */
+
+  /* Add padding to the container itself so first/last cards don't get cut */
+  padding: 1rem 0;
 }
 
-.skills-track-container::-webkit-scrollbar {
+.skills-section .skills-track-container::-webkit-scrollbar {
   display: none;
-  /* Chrome/Safari/Opera */
 }
 
 /* --- TRACK (FLEX CONTAINER) --- */
-
-.skills-track {
+.skills-section .skills-track {
   display: flex;
   gap: 2rem;
-  /* No side padding - cards fill the container exactly */
+  /* Add significant padding so hovered cards don't clip at edges */
+  padding: 0 2rem;
+  width: max-content;
+  /* Ensure track takes full width of content */
 }
 
 /* --- SKILL CARDS --- */
-
-.skill-card {
+.skills-section .skill-card {
   background: var(--bg-secondary);
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid var(--border-color);
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
-  /* Layout constraints */
   flex-shrink: 0;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
+  /* Align to center usually looks better */
 
-  /* Desktop: Show exactly 3 cards, no peek */
-  /* Calculation: (100% container - 2 gaps between 3 cards) / 3 */
-  width: calc((100% - 4rem) / 3);
+  /* Desktop: ~3 cards visible */
+  width: 300px;
+  /* Or use calc if you prefer dynamic width: */
+  /* width: calc((100vw - 8rem) / 3); */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  min-height: auto;
+  box-sizing: border-box;
 }
 
-/* Optional: subtle hover effect on cards */
-.skill-card:hover {
+/* HOVER EFFECT */
+.skills-section .skill-card:hover {
   border-color: var(--bg-accent);
+  transform: translateY(-10px) scale(1.05);
+  /* Move up and scale slightly */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  /* Nice shadow */
+  z-index: 10;
+  /* Bring to front */
 }
 
-/* --- ARROW BUTTONS (Minimal Icon Style) --- */
+/* --- INNER CARD ELEMENTS --- */
+.skills-section .skill-icon {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  height: auto;
+  width: auto;
+}
 
-.skills-arrow {
+.skills-section .skill-name {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* --- TAG STYLES --- */
+.skills-section .skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.skills-section .skill-tag {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+}
+
+/* --- ARROW BUTTONS --- */
+.skills-section .skills-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
-
-  background: transparent;
-  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  /* Slight background for visibility */
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
   color: #ec4899;
-
-  width: 40px;
-  height: 40px;
-
-  font-size: 3rem;
+  width: 48px;
+  height: 48px;
+  font-size: 2rem;
   line-height: 1;
   font-weight: 300;
-
   cursor: pointer;
   transition: all 0.3s ease;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  opacity: 0.7;
-  text-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+  backdrop-filter: blur(4px);
 }
 
-.skills-arrow:hover {
-  opacity: 1;
-  transform: translateY(-50%) scale(1.2);
-  color: #9333ea;
-  text-shadow: 0 4px 15px rgba(147, 51, 234, 0.5);
+.skills-section .skills-arrow:hover {
+  background: var(--bg-accent);
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  border-color: var(--bg-accent);
 }
 
-.skills-arrow:active {
-  transform: translateY(-50%) scale(1);
+.skills-section .skills-arrow.left {
+  left: 10px;
 }
 
-.skills-arrow.left {
-  left: -50px;
-}
-
-.skills-arrow.right {
-  right: -50px;
-}
-
-/* --- INNER CARD ELEMENTS --- */
-
-.skill-icon {
-  margin-bottom: 1rem;
-}
-
-.skill-name {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-}
-
-.skill-category {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
-}
-
-.skill-bar {
-  background: var(--bg-primary);
-  height: 8px;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-}
-
-.skill-progress {
-  background: linear-gradient(90deg, var(--bg-accent), #ec4899);
-  height: 100%;
-  border-radius: 10px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.skill-percent {
-  position: absolute;
-  right: 5px;
-  top: -25px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-accent);
+.skills-section .skills-arrow.right {
+  right: 10px;
 }
 
 /* --- RESPONSIVE ADJUSTMENTS --- */
-
-/* Tablet: Show 2 cards at a time */
 @media (max-width: 1024px) {
-  .skill-card {
-    width: calc((100% - 2rem) / 2);
-  }
-
-  .skills-arrow {
-    font-size: 2.5rem;
-  }
-
-  .skills-arrow.left {
-    left: -40px;
-  }
-
-  .skills-arrow.right {
-    right: -40px;
+  .skills-section .skill-card {
+    width: 280px;
   }
 }
 
-/* Mobile: Show 1 card at a time with slight peek */
 @media (max-width: 600px) {
-  .skill-card {
-    width: 85vw;
+  .skills-section .skill-card {
+    width: 80vw;
   }
 
-  .skills-arrow {
-    font-size: 2rem;
-  }
-
-  .skills-arrow.left {
-    left: 5px;
-  }
-
-  .skills-arrow.right {
-    right: 5px;
+  .skills-section .skills-track {
+    gap: 1rem;
+    padding: 0 1rem;
   }
 }

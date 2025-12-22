@@ -10,11 +10,11 @@ function AdminSkills() {
   const [skills, setSkills] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [editingSkill, setEditingSkill] = useState(null)
+
   const [formData, setFormData] = useState({
     name: '',
     icon: 'FaCode',
-    category: 'Frontend',
-    proficiency: 50,
+    category: '',
     description: '',
     is_visible: true
   })
@@ -43,10 +43,17 @@ function AdminSkills() {
     e.preventDefault()
 
     try {
+      const dataToSave = {
+        name: formData.name,
+        icon: formData.icon,
+        category: formData.category,
+        is_visible: formData.is_visible,
+      }
+
       if (editingSkill) {
         const { error } = await supabase
           .from('skills')
-          .update(formData)
+          .update(dataToSave)
           .eq('id', editingSkill.id)
 
         if (error) throw error
@@ -54,7 +61,7 @@ function AdminSkills() {
       } else {
         const { error } = await supabase
           .from('skills')
-          .insert([{ ...formData, display_order: skills.length + 1 }])
+          .insert([{ ...dataToSave, display_order: skills.length + 1 }])
 
         if (error) throw error
         toast.success('Skill added!')
@@ -72,7 +79,13 @@ function AdminSkills() {
 
   const handleEdit = (skill) => {
     setEditingSkill(skill)
-    setFormData(skill)
+    setFormData({
+      name: skill.name,
+      icon: skill.icon,
+      category: skill.category || '',
+      is_visible: skill.is_visible,
+      description: skill.description || ''
+    })
     setShowModal(true)
   }
 
@@ -112,8 +125,7 @@ function AdminSkills() {
     setFormData({
       name: '',
       icon: 'FaCode',
-      category: 'Frontend',
-      proficiency: 50,
+      category: '',
       description: '',
       is_visible: true
     })
@@ -125,7 +137,6 @@ function AdminSkills() {
     setShowModal(true)
   }
 
-  // Group icons by category for better dropdown organization
   const groupedIcons = availableIcons.reduce((acc, icon) => {
     if (!acc[icon.category]) {
       acc[icon.category] = []
@@ -150,19 +161,28 @@ function AdminSkills() {
             const IconComponent = iconData.icon
             const iconColor = iconData.color
 
+            const tags = skill.category ? skill.category.split(',') : []
+
             return (
               <div key={skill.id} className={`skill-card ${!skill.is_visible ? 'hidden' : ''}`}>
                 <div className="skill-icon" style={{ color: iconColor }}>
                   <IconComponent size={48} />
                 </div>
                 <h3>{skill.name}</h3>
-                <p className="skill-category">{skill.category}</p>
-                <div className="skill-bar">
-                  <div className="skill-progress" style={{ width: `${skill.proficiency}%` }}>
-                    {skill.proficiency}%
-                  </div>
+
+                {/* Updated Class Name Here */}
+                <div className="skill-tags-preview">
+                  {tags.length > 0 ? tags.map((t, i) => (
+                    <span key={i} className="skill-tag-badge">
+                      {t.trim()}
+                    </span>
+                  )) : (
+                    <span className="skill-tag-badge" style={{ opacity: 0.5 }}>No Category</span>
+                  )}
                 </div>
+
                 <div className="skill-actions">
+                  {/* ... buttons same as before ... */}
                   <button onClick={() => toggleVisibility(skill)} className="btn-icon">
                     {skill.is_visible ? <FiEye /> : <FiEyeOff />}
                   </button>
@@ -195,86 +215,81 @@ function AdminSkills() {
 
                 <div className="form-group">
                   <label>Icon (SVG with Official Colors)</label>
-                  <select
-                    value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    style={{ padding: '0.75rem', fontSize: '1rem' }}
-                  >
-                    {Object.keys(groupedIcons).map(category => (
-                      <optgroup key={category} label={category}>
-                        {groupedIcons[category].map(icon => (
-                          <option key={icon.value} value={icon.value}>
-                            {icon.label}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    marginTop: '0.75rem',
-                    padding: '0.75rem',
-                    background: 'var(--bg-secondary)',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Preview:</span>
-                    {(() => {
-                      const iconData = getSkillIcon(formData.icon)
-                      const PreviewIcon = iconData.icon
-                      const iconColor = iconData.color
-                      return (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <PreviewIcon size={32} style={{ color: iconColor }} />
-                          <span style={{
-                            fontSize: '0.85rem',
-                            color: 'var(--text-secondary)',
-                            fontFamily: 'monospace'
-                          }}>
-                            {iconColor}
-                          </span>
-                        </div>
-                      )
-                    })()}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <select
+                      value={formData.icon}
+                      onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                      style={{ padding: '0.75rem', fontSize: '1rem' }}
+                    >
+                      {Object.keys(groupedIcons).map(category => (
+                        <optgroup key={category} label={category}>
+                          {groupedIcons[category].map(icon => (
+                            <option key={icon.value} value={icon.value}>
+                              {icon.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+
+                    {/* FIXED PREVIEW SECTION */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Preview:</span>
+
+                      {(() => {
+                        // Dynamically render the icon
+                        const iconData = getSkillIcon(formData.icon)
+                        const PreviewIcon = iconData.icon
+                        const iconColor = iconData.color
+
+                        return (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {/* Force display block and explicit size */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
+                              <PreviewIcon size={32} style={{ color: iconColor }} />
+                            </div>
+                            <span style={{
+                              fontSize: '0.85rem',
+                              color: 'var(--text-secondary)',
+                              fontFamily: 'monospace'
+                            }}>
+                              {iconColor}
+                            </span>
+                          </div>
+                        )
+                      })()}
+                    </div>
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label>Category</label>
-                  <select
+                  <label>Categories (comma separated)</label>
+                  <input
+                    type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  >
-                    <option value="Frontend">Frontend</option>
-                    <option value="Backend">Backend</option>
-                    <option value="Database">Database</option>
-                    <option value="DevOps">DevOps</option>
-                    <option value="Tools">Tools</option>
-                    <option value="Design">Design</option>
-                    <option value="Mobile">Mobile</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Proficiency: {formData.proficiency}%</label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={formData.proficiency}
-                    onChange={(e) => setFormData({ ...formData, proficiency: parseInt(e.target.value) })}
+                    placeholder="e.g. Backend, Frontend"
                   />
+                  <small style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+                    Type multiple categories separated by commas
+                  </small>
                 </div>
 
                 <div className="form-group">
-                  <label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={formData.is_visible}
                       onChange={(e) => setFormData({ ...formData, is_visible: e.target.checked })}
+                      style={{ width: 'auto' }}
                     />
                     Visible on website
                   </label>

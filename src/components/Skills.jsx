@@ -44,14 +44,13 @@ function Skills() {
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
 
-    // Tolerance of 2px to handle fractional pixel rendering
+    // Tolerance of 2px
     const tolerance = 2;
 
     // Show left arrow if we are not at the very start
     setShowLeftArrow(scrollLeft > tolerance);
 
     // Show right arrow if we are not at the very end
-    // (scrollLeft + viewable width) < total scrollable width
     setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth - tolerance);
   };
 
@@ -75,19 +74,17 @@ function Skills() {
         window.removeEventListener('resize', checkScrollPosition);
       };
     }
-  }, [loading, skills]); // Dependency array ensures this runs again after loading finishes
+  }, [loading, skills]);
 
   // Scroll by one card width (plus gap)
   const scrollByAmount = (direction) => {
     if (!scrollRef.current) return;
 
     const container = scrollRef.current;
-    // Attempt to measure the first card dynamically
     const card = container.querySelector('.skill-card');
 
-    // Default fallback if card not found immediately
     const cardWidth = card ? card.offsetWidth : 300;
-    const gap = 32; // matches 2rem gap in CSS
+    const gap = 32; // matches 2rem gap
     const scrollAmount = cardWidth + gap;
 
     container.scrollBy({
@@ -123,6 +120,11 @@ function Skills() {
               const IconComponent = iconData.icon;
               const iconColor = iconData.color;
 
+              // Handle multiple categories (comma separated string)
+              const categories = skill.category
+                ? skill.category.split(',').map(c => c.trim())
+                : [];
+
               return (
                 <div
                   key={skill.id}
@@ -132,12 +134,18 @@ function Skills() {
                     <IconComponent size={48} />
                   </div>
                   <h3 className="skill-name">{skill.name}</h3>
-                  <p className="skill-category">{skill.category}</p>
-                  <div className="skill-bar">
-                    <div className="skill-progress" style={{ width: `${skill.proficiency}%` }}>
-                      <span className="skill-percent">{skill.proficiency}%</span>
-                    </div>
+
+                  {/* Replaced Proficiency Bar with Category Tags */}
+                  <div className="skill-tags">
+                    {categories.length > 0 ? (
+                      categories.map((cat, idx) => (
+                        <span key={idx} className="skill-tag">{cat}</span>
+                      ))
+                    ) : (
+                      <span className="skill-tag">General</span>
+                    )}
                   </div>
+
                 </div>
               );
             })}
