@@ -47,3 +47,6 @@ complete_*.py
 
 # OS
 Thumbs.db
+
+# Local Netlify folder
+.netlify

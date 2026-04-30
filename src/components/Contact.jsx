@@ -1,6 +1,7 @@
+// src/components/Contact.jsx
 import { useState } from 'react'
-import { FiMail, FiMapPin, FiPhone, FiSend } from 'react-icons/fi'
-import { supabase } from '../lib/supabase'
+import { FiMail, FiMapPin, FiSend } from 'react-icons/fi'
+import { api } from '../lib/api'
 import toast from 'react-hot-toast'
 import './Contact.css'
 
@@ -22,10 +23,7 @@ function Contact() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.from('contact_messages').insert([formData])
-
-      if (error) throw error
-
+      await api.submitContact(formData)
       toast.success('Message sent successfully! ✅')
       setFormData({ name: '', email: '', subject: '', message: '' })
     } catch (error) {
@@ -53,7 +51,6 @@ function Contact() {
                 <p>rahul@example.com</p>
               </div>
             </div>
-
             <div className="contact-item">
               <FiMapPin size={24} />
               <div>
@@ -61,8 +58,6 @@ function Contact() {
                 <p>Haryana, India</p>
               </div>
             </div>
-
-
           </div>
         </div>
 

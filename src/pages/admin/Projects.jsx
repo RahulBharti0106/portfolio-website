@@ -1,282 +1,263 @@
+// src/pages/admin/Projects.jsx
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../lib/api'
 import AdminLayout from '../../components/admin/AdminLayout'
 import toast from 'react-hot-toast'
-import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiStar, FiUpload } from 'react-icons/fi'
+import {
+  FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff,
+  FiStar, FiX, FiExternalLink, FiGithub, FiImage
+} from 'react-icons/fi'
 import './Projects.css'
 
-function AdminProjects() {
-  const [projects, setProjects] = useState([])
-  const [showModal, setShowModal] = useState(false)
-  const [editingProject, setEditingProject] = useState(null)
-  const [uploading, setUploading] = useState(false)
-  const [formData, setFormData] = useState({
-    title: '',
-    short_description: '',
-    full_description: '',
-    featured_image_url: '',
-    tech_stack: '',
-    github_url: '',
-    live_demo_url: '',
-    is_featured: false,
-    is_published: true,
-    is_visible: true
-  })
+const EMPTY = {
+  title: '', short_description: '', full_description: '',
+  featured_image_url: '', tech_stack: '', github_url: '',
+  live_demo_url: '', is_featured: false, is_published: true, is_visible: true,
+}
 
-  useEffect(() => {
-    fetchProjects()
-  }, [])
+export default function AdminProjects() {
+  const [projects, setProjects]       = useState([])
+  const [showModal, setShowModal]     = useState(false)
+  const [editing, setEditing]         = useState(null)
+  const [form, setForm]               = useState(EMPTY)
+  const [saving, setSaving]           = useState(false)
 
-  const fetchProjects = async () => {
-    const { data } = await supabase
-      .from('projects')
-      .select('*')
-      .order('display_order')
-    setProjects(data || [])
-  }
+  useEffect(() => { load() }, [])
 
-  const handleImageUpload = async (e) => {
+  const load = async () => {
     try {
-      const file = e.target.files[0]
-      if (!file) return
-
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please upload an image file')
-        return
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image must be less than 5MB')
-        return
-      }
-
-      setUploading(true)
-
-      // Create unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
-      const filePath = `project-images/${fileName}`
-
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('portfolio-assets')
-        .upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('portfolio-assets')
-        .getPublicUrl(filePath)
-
-      setFormData({ ...formData, featured_image_url: publicUrl })
-      toast.success('Image uploaded successfully!')
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Failed to upload image: ' + error.message)
-    } finally {
-      setUploading(false)
-    }
+      const data = await api.adminGetProjects()
+      setProjects(data || [])
+    } catch { toast.error('Failed to load projects') }
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const projectData = {
-      ...formData,
-      tech_stack: formData.tech_stack.split(',').map(t => t.trim())
-    }
+  const openAdd = () => { setEditing(null); setForm(EMPTY); setShowModal(true) }
 
-    try {
-      if (editingProject) {
-        await supabase.from('projects').update(projectData).eq('id', editingProject.id)
-        toast.success('Project updated!')
-      } else {
-        await supabase.from('projects').insert([{ ...projectData, display_order: projects.length + 1 }])
-        toast.success('Project added!')
-      }
-      setShowModal(false)
-      resetForm()
-      fetchProjects()
-    } catch (error) {
-      toast.error('Error saving project')
-    }
-  }
-
-  const handleEdit = (project) => {
-    setEditingProject(project)
-    setFormData({
-      ...project,
-      tech_stack: project.tech_stack?.join(', ') || ''
-    })
+  const openEdit = (p) => {
+    setEditing(p)
+    setForm({ ...p, tech_stack: p.tech_stack?.join(', ') || '' })
     setShowModal(true)
   }
 
+  const closeModal = () => { setShowModal(false); setEditing(null); setForm(EMPTY) }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      if (editing) {
+        await api.updateProject({ ...form, id: editing.id })
+        toast.success('Project updated!')
+      } else {
+        await api.createProject(form)
+        toast.success('Project created!')
+      }
+      closeModal(); load()
+    } catch { toast.error('Error saving project') }
+    finally { setSaving(false) }
+  }
+
   const handleDelete = async (id) => {
-    if (!confirm('Delete this project?')) return
-    await supabase.from('projects').delete().eq('id', id)
-    toast.success('Project deleted')
-    fetchProjects()
+    if (!confirm('Delete this project? This cannot be undone.')) return
+    try { await api.deleteProject(id); toast.success('Deleted'); load() }
+    catch { toast.error('Error deleting') }
   }
 
-  const toggleVisibility = async (project) => {
-    await supabase.from('projects').update({ is_visible: !project.is_visible }).eq('id', project.id)
-    fetchProjects()
+  const toggleVis = async (p) => {
+    try {
+      await api.updateProject({ ...p, tech_stack: p.tech_stack?.join(', ') || '', is_visible: !p.is_visible })
+      load()
+    } catch { toast.error('Error') }
   }
 
-  const toggleFeatured = async (project) => {
-    await supabase.from('projects').update({ is_featured: !project.is_featured }).eq('id', project.id)
-    fetchProjects()
+  const toggleFeat = async (p) => {
+    try {
+      await api.updateProject({ ...p, tech_stack: p.tech_stack?.join(', ') || '', is_featured: !p.is_featured })
+      load()
+    } catch { toast.error('Error') }
   }
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      short_description: '',
-      full_description: '',
-      featured_image_url: '',
-      tech_stack: '',
-      github_url: '',
-      live_demo_url: '',
-      is_featured: false,
-      is_published: true,
-      is_visible: true
-    })
-    setEditingProject(null)
-  }
+  const f = (key) => ({
+    value: form[key],
+    onChange: (e) => setForm({ ...form, [key]: e.target.value }),
+  })
 
   return (
     <AdminLayout>
-      <div className="admin-projects">
-        <div className="page-header">
-          <h1>Projects Management</h1>
-          <button onClick={() => setShowModal(true)} className="btn btn-primary">
-            <FiPlus /> Add Project
+      <div className="adm-page">
+
+        {/* ── header ── */}
+        <div className="adm-header">
+          <div>
+            <h1 className="adm-title">Projects</h1>
+            <p className="adm-subtitle">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
+          </div>
+          <button className="adm-add-btn" onClick={openAdd}>
+            <FiPlus size={15} /> Add Project
           </button>
         </div>
 
-        <div className="projects-list">
-          {projects.map((project) => (
-            <div key={project.id} className={`project-card ${!project.is_visible ? 'hidden' : ''}`}>
-              {project.featured_image_url && (
-                <img src={project.featured_image_url} alt={project.title} className="project-img" />
-              )}
-              <div className="project-content">
-                <h3>{project.title}</h3>
-                <p>{project.short_description}</p>
-                <div className="project-tech">
-                  {project.tech_stack?.map((tech, i) => (
-                    <span key={i} className="tech-tag">{tech}</span>
-                  ))}
+        {/* ── list ── */}
+        <div className="adm-list">
+          {projects.length === 0 && (
+            <div className="adm-empty">
+              <FiImage size={30} />
+              <p>No projects yet. Add your first one!</p>
+            </div>
+          )}
+
+          {projects.map(p => (
+            <div key={p.id} className={'adm-card' + (!p.is_visible ? ' adm-card--dim' : '')}>
+
+              {/* thumb */}
+              <div className="adm-thumb">
+                {p.featured_image_url
+                  ? <img src={p.featured_image_url} alt={p.title} />
+                  : <div className="adm-thumb-empty"><FiImage size={22} /></div>
+                }
+                {p.is_featured && <span className="adm-feat-pip">★</span>}
+              </div>
+
+              {/* content */}
+              <div className="adm-content">
+                <div className="adm-card-top">
+                  <h3 className="adm-card-title">{p.title}</h3>
+                  <div className="adm-badges">
+                    {p.is_featured  && <span className="adm-badge adm-badge-feat">Featured</span>}
+                    {!p.is_visible  && <span className="adm-badge adm-badge-hidden">Hidden</span>}
+                    {p.is_published && <span className="adm-badge adm-badge-live">Live</span>}
+                  </div>
                 </div>
-                <div className="project-actions">
-                  <button onClick={() => toggleFeatured(project)} className="btn-icon">
-                    <FiStar fill={project.is_featured ? 'gold' : 'none'} color={project.is_featured ? 'gold' : 'currentColor'} />
-                  </button>
-                  <button onClick={() => toggleVisibility(project)} className="btn-icon">
-                    {project.is_visible ? <FiEye /> : <FiEyeOff />}
-                  </button>
-                  <button onClick={() => handleEdit(project)} className="btn-icon">
-                    <FiEdit2 />
-                  </button>
-                  <button onClick={() => handleDelete(project.id)} className="btn-icon danger">
-                    <FiTrash2 />
-                  </button>
+
+                <p className="adm-card-desc">{p.short_description}</p>
+
+                <div className="adm-card-foot">
+                  <div className="adm-tags">
+                    {p.tech_stack?.map((t, i) => <span key={i} className="adm-tag">{t}</span>)}
+                  </div>
+
+                  <div className="adm-actions">
+                    {p.live_demo_url && (
+                      <a href={p.live_demo_url} target="_blank" rel="noopener noreferrer"
+                        className="adm-icon-btn adm-icon-btn--link" title="Live Demo">
+                        <FiExternalLink size={14} />
+                      </a>
+                    )}
+                    {p.github_url && (
+                      <a href={p.github_url} target="_blank" rel="noopener noreferrer"
+                        className="adm-icon-btn adm-icon-btn--link" title="GitHub">
+                        <FiGithub size={14} />
+                      </a>
+                    )}
+                    <button onClick={() => toggleFeat(p)}
+                      className={'adm-icon-btn' + (p.is_featured ? ' adm-icon-btn--feat' : '')}
+                      title="Toggle featured">
+                      <FiStar size={14} fill={p.is_featured ? 'currentColor' : 'none'} />
+                    </button>
+                    <button onClick={() => toggleVis(p)} className="adm-icon-btn" title="Toggle visibility">
+                      {p.is_visible ? <FiEye size={14} /> : <FiEyeOff size={14} />}
+                    </button>
+                    <button onClick={() => openEdit(p)} className="adm-icon-btn adm-icon-btn--edit" title="Edit">
+                      <FiEdit2 size={14} />
+                    </button>
+                    <button onClick={() => handleDelete(p.id)} className="adm-icon-btn adm-icon-btn--del" title="Delete">
+                      <FiTrash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
+
             </div>
           ))}
         </div>
 
+        {/* ── modal ── */}
         {showModal && (
-          <div className="modal-overlay" onClick={() => { setShowModal(false); resetForm(); }}>
-            <div className="modal large" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingProject ? 'Edit Project' : 'Add New Project'}</h2>
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label>Project Title</label>
-                  <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-                </div>
+          <div className="adm-backdrop" onClick={closeModal}>
+            <div className="adm-modal" onClick={e => e.stopPropagation()}>
 
-                <div className="form-group">
-                  <label>Short Description</label>
-                  <textarea rows="2" value={formData.short_description} onChange={(e) => setFormData({ ...formData, short_description: e.target.value })} />
-                </div>
+              <div className="adm-modal-head">
+                <h2 className="adm-modal-title">{editing ? 'Edit Project' : 'New Project'}</h2>
+                <button className="adm-modal-close" onClick={closeModal}><FiX size={17} /></button>
+              </div>
 
-                <div className="form-group">
-                  <label>Full Description</label>
-                  <textarea rows="4" value={formData.full_description || ''} onChange={(e) => setFormData({ ...formData, full_description: e.target.value })} />
+              {/* image preview strip */}
+              {form.featured_image_url && (
+                <div className="adm-img-preview">
+                  <img src={form.featured_image_url} alt="preview" />
+                  <div className="adm-img-fade" />
                 </div>
+              )}
 
-                <div className="form-group">
-                  <label>Featured Image</label>
-                  <div className="image-upload-section">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploading}
-                      id="image-upload"
-                      style={{ display: 'none' }}
-                    />
-                    <label htmlFor="image-upload" className="btn btn-outline upload-btn">
-                      <FiUpload /> {uploading ? 'Uploading...' : 'Upload Image'}
-                    </label>
-                    {formData.featured_image_url && (
-                      <div className="image-preview">
-                        <img src={formData.featured_image_url} alt="Preview" />
-                      </div>
-                    )}
-                    <input
-                      type="url"
-                      value={formData.featured_image_url || ''}
-                      onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
-                      placeholder="Or paste image URL"
-                      style={{ marginTop: '10px' }}
-                    />
+              <div className="adm-modal-body">
+                <form onSubmit={handleSubmit} className="adm-form">
+
+                  <div className="adm-field">
+                    <label className="adm-label">Project Title <span className="adm-req">*</span></label>
+                    <input className="adm-input" type="text" placeholder="e.g. Neural Link Dashboard" required {...f('title')} />
                   </div>
-                </div>
 
-                <div className="form-group">
-                  <label>Tech Stack (comma separated)</label>
-                  <input type="text" value={formData.tech_stack} onChange={(e) => setFormData({ ...formData, tech_stack: e.target.value })} placeholder="React, Node.js, MongoDB" />
-                </div>
+                  <div className="adm-field">
+                    <label className="adm-label">Short Description</label>
+                    <textarea className="adm-input adm-textarea" rows={2} placeholder="One-liner shown on card" {...f('short_description')} />
+                  </div>
 
-                <div className="form-group">
-                  <label>GitHub URL</label>
-                  <input type="url" value={formData.github_url || ''} onChange={(e) => setFormData({ ...formData, github_url: e.target.value })} />
-                </div>
+                  <div className="adm-field">
+                    <label className="adm-label">Full Description</label>
+                    <textarea className="adm-input adm-textarea" rows={4} placeholder="Detailed description in modal" {...f('full_description')} />
+                  </div>
 
-                <div className="form-group">
-                  <label>Live Demo URL</label>
-                  <input type="url" value={formData.live_demo_url || ''} onChange={(e) => setFormData({ ...formData, live_demo_url: e.target.value })} />
-                </div>
+                  <div className="adm-field">
+                    <label className="adm-label">Featured Image URL</label>
+                    <input className="adm-input" type="url" placeholder="https://..." {...f('featured_image_url')} />
+                  </div>
 
-                <div className="form-checks">
-                  <label>
-                    <input type="checkbox" checked={formData.is_featured} onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} />
-                    Featured Project
-                  </label>
-                  <label>
-                    <input type="checkbox" checked={formData.is_visible} onChange={(e) => setFormData({ ...formData, is_visible: e.target.checked })} />
-                    Visible on Website
-                  </label>
-                </div>
+                  <div className="adm-field">
+                    <label className="adm-label">Tech Stack</label>
+                    <input className="adm-input" type="text" placeholder="React, Node.js, PostgreSQL" {...f('tech_stack')} />
+                    <span className="adm-hint">Comma-separated values</span>
+                  </div>
 
-                <div className="modal-actions">
-                  <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="btn btn-outline">Cancel</button>
-                  <button type="submit" className="btn btn-primary" disabled={uploading}>
-                    {uploading ? 'Uploading...' : editingProject ? 'Update Project' : 'Add Project'}
-                  </button>
-                </div>
-              </form>
+                  <div className="adm-row">
+                    <div className="adm-field">
+                      <label className="adm-label"><FiGithub size={12} style={{verticalAlign:'middle',marginRight:'0.3rem'}}/>GitHub URL</label>
+                      <input className="adm-input" type="url" placeholder="https://github.com/..." {...f('github_url')} />
+                    </div>
+                    <div className="adm-field">
+                      <label className="adm-label"><FiExternalLink size={12} style={{verticalAlign:'middle',marginRight:'0.3rem'}}/>Live Demo URL</label>
+                      <input className="adm-input" type="url" placeholder="https://..." {...f('live_demo_url')} />
+                    </div>
+                  </div>
+
+                  <div className="adm-checks">
+                    {[
+                      { key: 'is_featured', label: 'Featured Project' },
+                      { key: 'is_visible',  label: 'Visible on Website' },
+                      { key: 'is_published',label: 'Published' },
+                    ].map(({ key, label }) => (
+                      <label key={key} className="adm-check">
+                        <input type="checkbox" className="adm-checkbox"
+                          checked={form[key]}
+                          onChange={e => setForm({ ...form, [key]: e.target.checked })} />
+                        <span>{label}</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="adm-form-actions">
+                    <button type="button" className="adm-btn adm-btn-outline" onClick={closeModal}>Cancel</button>
+                    <button type="submit" className="adm-btn adm-btn-primary" disabled={saving}>
+                      {saving ? 'Saving…' : editing ? 'Update Project' : 'Add Project'}
+                    </button>
+                  </div>
+
+                </form>
+              </div>
             </div>
           </div>
         )}
+
       </div>
     </AdminLayout>
   )
 }
-
-export default AdminProjects

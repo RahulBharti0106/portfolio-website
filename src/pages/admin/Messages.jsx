@@ -1,8 +1,9 @@
+// src/pages/admin/Messages.jsx
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../lib/api'
 import AdminLayout from '../../components/admin/AdminLayout'
 import toast from 'react-hot-toast'
-import { FiMail, FiTrash2, FiStar } from 'react-icons/fi'
+import { FiTrash2, FiStar } from 'react-icons/fi'
 import { format } from 'date-fns'
 import './Messages.css'
 
@@ -10,46 +11,44 @@ function AdminMessages() {
   const [messages, setMessages] = useState([])
   const [selectedMessage, setSelectedMessage] = useState(null)
 
-  useEffect(() => {
-    fetchMessages()
-  }, [])
+  useEffect(() => { fetchMessages() }, [])
 
   const fetchMessages = async () => {
-    const { data, error } = await supabase
-      .from('contact_messages')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (!error) setMessages(data || [])
+    try {
+      const data = await api.getMessages()
+      setMessages(data || [])
+    } catch (err) {
+      toast.error('Failed to load messages')
+    }
   }
 
   const markAsRead = async (id) => {
-    await supabase
-      .from('contact_messages')
-      .update({ is_read: true })
-      .eq('id', id)
-    fetchMessages()
+    try {
+      await api.updateMessage({ id, is_read: true })
+      fetchMessages()
+    } catch (err) {
+      console.error('Mark as read error:', err)
+    }
   }
 
   const toggleStar = async (message) => {
-    await supabase
-      .from('contact_messages')
-      .update({ is_starred: !message.is_starred })
-      .eq('id', message.id)
-    fetchMessages()
+    try {
+      await api.updateMessage({ id: message.id, is_starred: !message.is_starred })
+      fetchMessages()
+    } catch (err) {
+      toast.error('Failed to update message')
+    }
   }
 
   const deleteMessage = async (id) => {
     if (!confirm('Delete this message?')) return
-    const { error } = await supabase
-      .from('contact_messages')
-      .delete()
-      .eq('id', id)
-    
-    if (!error) {
+    try {
+      await api.deleteMessage(id)
       toast.success('Message deleted')
       fetchMessages()
       setSelectedMessage(null)
+    } catch (err) {
+      toast.error('Failed to delete message')
     }
   }
 
@@ -64,6 +63,11 @@ function AdminMessages() {
         <h1>Messages</h1>
         <div className="messages-container">
           <div className="messages-list">
+            {messages.length === 0 && (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                No messages yet
+              </div>
+            )}
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -76,7 +80,10 @@ function AdminMessages() {
                 </div>
                 <div className="message-subject">{msg.subject || 'No subject'}</div>
                 <div className="message-preview">{msg.message.substring(0, 50)}...</div>
-                <button onClick={(e) => { e.stopPropagation(); toggleStar(msg); }} className="star-btn">
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleStar(msg) }}
+                  className="star-btn"
+                >
                   <FiStar fill={msg.is_starred ? 'gold' : 'none'} color={msg.is_starred ? 'gold' : 'currentColor'} />
                 </button>
               </div>

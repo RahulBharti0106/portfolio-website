@@ -1,5 +1,6 @@
+// src/pages/admin/Dashboard.jsx
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../lib/api'
 import AdminLayout from '../../components/admin/AdminLayout'
 import { FiCode, FiBriefcase, FiMail } from 'react-icons/fi'
 import './Dashboard.css'
@@ -9,12 +10,21 @@ function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [skills, projects, messages] = await Promise.all([
-        supabase.from('skills').select('*', { count: 'exact' }),
-        supabase.from('projects').select('*', { count: 'exact' }),
-        supabase.from('contact_messages').select('*', { count: 'exact' })
-      ])
-      setStats({ skills: skills.count || 0, projects: projects.count || 0, messages: messages.count || 0 })
+      try {
+        // Fetch all three in parallel
+        const [skills, projects, messages] = await Promise.all([
+          api.adminGetSkills(),
+          api.adminGetProjects(),
+          api.getMessages(),
+        ])
+        setStats({
+          skills: skills.length || 0,
+          projects: projects.length || 0,
+          messages: messages.length || 0,
+        })
+      } catch (err) {
+        console.error('Dashboard stats error:', err)
+      }
     }
     fetchStats()
   }, [])

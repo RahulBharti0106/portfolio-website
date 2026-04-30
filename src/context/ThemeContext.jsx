@@ -1,6 +1,6 @@
 // src/context/ThemeContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 
 const ThemeContext = createContext();
 
@@ -16,13 +16,8 @@ export function ThemeProvider({ children }) {
 
     const fetchTheme = async () => {
         try {
-            const { data, error } = await supabase
-                .from('themes')
-                .select('*')
-                .eq('is_active', true)
-                .maybeSingle();
-
-            if (data && !error) {
+            const data = await api.getTheme();
+            if (data) {
                 setTheme(data);
                 applyTheme(data);
             }

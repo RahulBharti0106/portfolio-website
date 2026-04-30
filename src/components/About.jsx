@@ -1,7 +1,8 @@
+// src/components/About.jsx
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { TbBrandTelegram } from "react-icons/tb";
-import { FiGithub, FiLinkedin, FiMail, FiTwitter, FiInstagram, } from 'react-icons/fi';
+import { FiGithub, FiLinkedin, FiMail, FiTwitter, FiInstagram } from 'react-icons/fi';
 import './About.css';
 
 function About() {
@@ -12,21 +13,14 @@ function About() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: profileData } = await supabase
-          .from('profile')
-          .select('*')
-          .single();
-
-        const { data: socialsData } = await supabase
-          .from('social_links')
-          .select('*')
-          .eq('visible', true)
-          .order('id');
-
-        if (profileData) setProfile(profileData);
-        if (socialsData) setSocials(socialsData);
+        const [profileData, socialsData] = await Promise.all([
+          api.getProfile(),
+          api.getSocials(),
+        ])
+        setProfile(profileData)
+        setSocials(socialsData || [])
       } catch (e) {
-        console.warn(e);
+        console.warn('About fetch error:', e);
       } finally {
         setLoading(false);
       }
@@ -34,20 +28,14 @@ function About() {
     fetchData();
   }, []);
 
-  // Icon mapping for social links
   const getIcon = (iconName) => {
     const icons = {
-      FiGithub: FiGithub,
-      FiLinkedin: FiLinkedin,
-      FiInstagram: FiInstagram,
-      TbBrandTelegram: TbBrandTelegram,
-      FiMail: FiMail,
-      FiTwitter: FiTwitter,
+      FiGithub, FiLinkedin, FiInstagram,
+      TbBrandTelegram, FiMail, FiTwitter,
     };
     return icons[iconName] || FiMail;
   };
 
-  // Safe render checks
   if (loading) return null;
   if (!profile || profile.about_visible === false) return null;
 

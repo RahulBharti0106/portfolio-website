@@ -1,36 +1,27 @@
+// src/components/Navbar.jsx
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FiMenu, FiX, FiMoon, FiSun } from 'react-icons/fi';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import './Navbar.css';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
-  const themeCache = useRef(null); // Cache theme data to avoid refetching
+  const themeCache = useRef(null);
 
-  // Load theme from Supabase ONCE on mount
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const { data, error } = await supabase
-          .from('themes')
-          .select('*')
-          .eq('is_active', true)
-          .maybeSingle();
+        const data = await api.getTheme()
+        if (data) themeCache.current = data;
 
-        if (!error && data) {
-          themeCache.current = data; // Cache the theme
-        }
-
-        // Get stored preference or default to dark
         const storedTheme = localStorage.getItem('theme');
         const isDarkMode = storedTheme === 'light' ? false : true;
         setIsDark(isDarkMode);
         applyTheme(isDarkMode);
       } catch (err) {
         console.warn('Theme load error:', err);
-        // Fallback to localStorage
         const storedTheme = localStorage.getItem('theme');
         const isDarkMode = storedTheme === 'light' ? false : true;
         setIsDark(isDarkMode);
@@ -40,13 +31,11 @@ function Navbar() {
     loadTheme();
   }, []);
 
-  // Apply theme function - uses cached theme or defaults
   const applyTheme = (isDark) => {
     const root = document.documentElement;
     const themeData = themeCache.current;
 
     if (themeData) {
-      // Use colors from cached Supabase theme
       if (isDark) {
         root.style.setProperty('--bg-primary', themeData.dark_bg_primary);
         root.style.setProperty('--bg-secondary', themeData.dark_bg_secondary);
@@ -62,12 +51,8 @@ function Navbar() {
         root.style.setProperty('--text-secondary', themeData.light_text_secondary);
         root.style.setProperty('--text-accent', themeData.light_accent);
       }
-
-      // Apply typography
-      root.style.setProperty('--font-family', themeData.font_family);
-      root.style.setProperty('--font-size-base', themeData.font_size + 'px');
     } else {
-      // Fallback to default colors
+      // Fallback defaults
       if (isDark) {
         root.style.setProperty('--bg-primary', '#0a0a0a');
         root.style.setProperty('--bg-secondary', '#1a1a1a');
@@ -85,17 +70,15 @@ function Navbar() {
       }
     }
 
-    // Set border color based on theme
     root.style.setProperty('--border-color', isDark ? '#2d2d2d' : '#e5e7eb');
     root.style.setProperty('--shadow', isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)');
   };
 
-  // Toggle Handler - INSTANT (uses cached theme)
   const toggleTheme = () => {
     const newMode = !isDark;
     setIsDark(newMode);
     localStorage.setItem('theme', newMode ? 'dark' : 'light');
-    applyTheme(newMode); // Uses cached theme, no API call
+    applyTheme(newMode);
   };
 
   return (
@@ -112,21 +95,13 @@ function Navbar() {
           <a href="#projects">Projects</a>
           <a href="#about">About</a>
           <a href="#contact">Contact</a>
-
-          <button
-            onClick={toggleTheme}
-            className="theme-toggle"
-            aria-label="Toggle theme"
-          >
+          <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
             {isDark ? <FiSun size={20} /> : <FiMoon size={20} />}
           </button>
         </div>
 
         {/* Mobile Menu Button */}
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <button className="mobile-menu-btn" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
         </button>
 

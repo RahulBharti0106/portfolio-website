@@ -1,6 +1,7 @@
+// src/components/Footer.jsx
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { FiGithub, FiLinkedin, FiTwitter, FiInstagram, } from 'react-icons/fi';
+import { api } from '../lib/api';
+import { FiGithub, FiLinkedin, FiTwitter, FiInstagram } from 'react-icons/fi';
 import { TbBrandTelegram } from 'react-icons/tb';
 import './Footer.css';
 
@@ -16,102 +17,31 @@ function Footer() {
     company_column_title: 'Company',
     copyright_text: 'All rights reserved.'
   });
-
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
   const [companyLinks, setCompanyLinks] = useState([]);
   const [socialLinks, setSocialLinks] = useState([]);
 
   useEffect(() => {
-    fetchFooterData();
-    fetchProjects();
-    fetchSkills();
-    fetchCompanyLinks();
-    fetchSocialLinks();
+    const fetchFooter = async () => {
+      try {
+        // Single call returns everything needed for the footer
+        const data = await api.getFooter()
+        if (data.settings) setFooterData(data.settings)
+        setProjects(data.projects || [])
+        setSkills(data.skills || [])
+        setCompanyLinks(data.companyLinks || [])
+        setSocialLinks(data.socialLinks || [])
+      } catch (err) {
+        console.error('Footer fetch error:', err)
+      }
+    }
+    fetchFooter()
   }, []);
-
-  const fetchFooterData = async () => {
-    try {
-      const { data } = await supabase
-        .from('footer_settings')
-        .select('*')
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (data) setFooterData(data);
-    } catch (err) {
-      console.error('Footer settings error:', err);
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const { data } = await supabase
-        .from('projects')
-        .select('id, title')
-        .eq('is_visible', true)
-        .eq('is_published', true)
-        .order('display_order')
-        .limit(5);
-
-      setProjects(data || []);
-    } catch (err) {
-      console.error('Projects fetch error:', err);
-    }
-  };
-
-  const fetchSkills = async () => {
-    try {
-      const { data } = await supabase
-        .from('skills')
-        .select('id, name')
-        .eq('is_visible', true)
-        .order('display_order')
-        .limit(6);
-
-      setSkills(data || []);
-    } catch (err) {
-      console.error('Skills fetch error:', err);
-    }
-  };
-
-  const fetchCompanyLinks = async () => {
-    try {
-      const { data } = await supabase
-        .from('footer_links')
-        .select('*')
-        .eq('is_visible', true)
-        .eq('column_name', 'company')
-        .order('display_order');
-
-      setCompanyLinks(data || []);
-    } catch (err) {
-      console.error('Company links fetch error:', err);
-    }
-  };
-
-  const fetchSocialLinks = async () => {
-    try {
-      const { data } = await supabase
-        .from('social_links')
-        .select('*')
-        .eq('visible', true)
-        .order('id');
-
-      setSocialLinks(data || []);
-    } catch (err) {
-      console.error('Social links fetch error:', err);
-    }
-  };
 
   const getSocialIcon = (iconName) => {
     const icons = {
-      FiGithub: FiGithub,
-      FiLinkedin: FiLinkedin,
-      FiTwitter: FiTwitter,
-      FiInstagram: FiInstagram,
-      // FiMail: FiMail,
-      TbBrandTelegram: TbBrandTelegram,
+      FiGithub, FiLinkedin, FiTwitter, FiInstagram, TbBrandTelegram,
     };
     return icons[iconName] || FiGithub;
   };
@@ -152,7 +82,6 @@ function Footer() {
 
           {/* Right Section - Columns */}
           <div className="footer-columns">
-            {/* Product Column (Projects) */}
             {footerData.show_product_column && projects.length > 0 && (
               <div className="footer-column">
                 <h4>{footerData.product_column_title}</h4>
@@ -166,7 +95,6 @@ function Footer() {
               </div>
             )}
 
-            {/* Resources Column (Skills) */}
             {footerData.show_resources_column && skills.length > 0 && (
               <div className="footer-column">
                 <h4>{footerData.resources_column_title}</h4>
@@ -180,7 +108,6 @@ function Footer() {
               </div>
             )}
 
-            {/* Company Column (Custom Links) */}
             {footerData.show_company_column && companyLinks.length > 0 && (
               <div className="footer-column">
                 <h4>{footerData.company_column_title}</h4>
@@ -196,7 +123,6 @@ function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="footer-bottom">
           <p>© {currentYear} {footerData.brand_name}. {footerData.copyright_text}</p>
         </div>

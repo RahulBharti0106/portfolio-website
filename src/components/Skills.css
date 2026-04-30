@@ -122,7 +122,7 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(208, 206, 206, 0.5);
   /* Slight background for visibility */
   border: 1px solid var(--border-color);
   border-radius: 50%;
