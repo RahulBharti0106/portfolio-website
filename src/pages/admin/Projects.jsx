@@ -7,6 +7,7 @@ import {
   FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff,
   FiStar, FiX, FiExternalLink, FiGithub, FiImage
 } from 'react-icons/fi'
+import ConfirmModal from '../../components/admin/ConfirmModal';
 import './Projects.css'
 
 const EMPTY = {
@@ -21,6 +22,7 @@ export default function AdminProjects() {
   const [editing, setEditing]         = useState(null)
   const [form, setForm]               = useState(EMPTY)
   const [saving, setSaving]           = useState(false)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, projectId: null });
 
   useEffect(() => { load() }, [])
 
@@ -57,11 +59,21 @@ export default function AdminProjects() {
     finally { setSaving(false) }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this project? This cannot be undone.')) return
-    try { await api.deleteProject(id); toast.success('Deleted'); load() }
-    catch { toast.error('Error deleting') }
+ const handleDelete = async (id) => {
+  setConfirmModal({ isOpen: true, projectId: id });
+};
+
+const confirmDelete = async () => {
+  try {
+    await api.deleteProject(confirmModal.projectId);
+    toast.success('Deleted');
+    load();
+  } catch {
+    toast.error('Error deleting');
+  } finally {
+    setConfirmModal({ isOpen: false, projectId: null });
   }
+};
 
   const toggleVis = async (p) => {
     try {
@@ -258,6 +270,14 @@ export default function AdminProjects() {
         )}
 
       </div>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, projectId: null })}
+      />
     </AdminLayout>
   )
 }

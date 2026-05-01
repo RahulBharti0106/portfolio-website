@@ -46,37 +46,58 @@ function AdminProfile() {
   // ── Image upload helper ──
   // Converts the file to base64 and calls api.uploadImage (or saves URL directly)
   // Adjust this to your actual image handling (Cloudinary, direct URL, etc.)
-  const handleImageUpload = async (e, field) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+const handleImageUpload = async (e, field) => {
+  const file = e.target.files?.[0]
+  if (!file) return
 
-    // Validate
-    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return }
-    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5 MB'); return }
-
-    const setUploading = field === 'avatar_url' ? setAvatarUploading : setBannerUploading
-
-    setUploading(true)
-    try {
-      // Option A: If you have Cloudinary or similar upload endpoint via api:
-      // const url = await api.uploadImage(file, field)
-
-      // Option B (temporary local preview — replace with real upload):
-      const url = await new Promise((resolve) => {
-        const reader = new FileReader()
-        reader.onload = (ev) => resolve(ev.target.result)
-        reader.readAsDataURL(file)
-      })
-
-      setProfile(prev => ({ ...prev, [field]: url }))
-      toast.success(`${field === 'avatar_url' ? 'Profile photo' : 'Banner'} updated — remember to save!`)
-    } catch (err) {
-      console.error('Upload error:', err)
-      toast.error('Upload failed')
-    } finally {
-      setUploading(false)
-    }
+  if (!file.type.startsWith('image/')) {
+    toast.error('Please select an image file')
+    return
   }
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error('Image must be under 5MB')
+    return
+  }
+
+  const setUploading = field === 'avatar_url' ? setAvatarUploading : setBannerUploading
+  setUploading(true)
+
+  try {
+    // Convert to base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (ev) => resolve(ev.target.result)
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsDataURL(file)
+    })
+
+    // Determine folder
+    const folder = field === 'avatar_url' ? 'portfolio/avatars' : 'portfolio/banners'
+
+    toast.loading('Uploading image...', { id: 'upload' })
+
+    // Upload to Cloudinary via our function
+    const result = await api.uploadImage(base64, folder)
+
+    // Save the Cloudinary URL to profile state
+    setProfile(prev => ({ ...prev, [field]: result.url }))
+
+    toast.success(
+      field === 'avatar_url'
+        ? 'Photo uploaded! Click Save Changes to apply.'
+        : 'Banner uploaded! Click Save Changes to apply.',
+      { id: 'upload' }
+    )
+
+  } catch (err) {
+    console.error('Upload error:', err)
+    toast.error('Upload failed: ' + err.message, { id: 'upload' })
+  } finally {
+    setUploading(false)
+    // Reset file input so same file can be re-selected if needed
+    e.target.value = ''
+  }
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault()

@@ -5,8 +5,12 @@ import Projects from '../components/Projects';
 import About from '../components/About';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
+import uselenis from '../hooks/useLenis'
 
 function Home() {
+
+  uselenis();
+  
   return (
     <div className="home">
       <Navbar />

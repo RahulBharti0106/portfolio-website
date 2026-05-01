@@ -5,11 +5,13 @@ import AdminLayout from '../../components/admin/AdminLayout'
 import toast from 'react-hot-toast'
 import { FiTrash2, FiStar } from 'react-icons/fi'
 import { format } from 'date-fns'
+import ConfirmModal from '../../components/admin/ConfirmModal';
 import './Messages.css'
 
 function AdminMessages() {
   const [messages, setMessages] = useState([])
   const [selectedMessage, setSelectedMessage] = useState(null)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, messageId: null });
 
   useEffect(() => { fetchMessages() }, [])
 
@@ -39,18 +41,22 @@ function AdminMessages() {
       toast.error('Failed to update message')
     }
   }
+const deleteMessage = async (id) => {
+  setConfirmModal({ isOpen: true, messageId: id });
+};
 
-  const deleteMessage = async (id) => {
-    if (!confirm('Delete this message?')) return
-    try {
-      await api.deleteMessage(id)
-      toast.success('Message deleted')
-      fetchMessages()
-      setSelectedMessage(null)
-    } catch (err) {
-      toast.error('Failed to delete message')
-    }
+const confirmDelete = async () => {
+  try {
+    await api.deleteMessage(confirmModal.messageId);
+    toast.success('Message deleted');
+    fetchMessages();
+    setSelectedMessage(null);
+  } catch (err) {
+    toast.error('Failed to delete message');
+  } finally {
+    setConfirmModal({ isOpen: false, messageId: null });
   }
+};
 
   const openMessage = (message) => {
     setSelectedMessage(message)
@@ -109,6 +115,14 @@ function AdminMessages() {
           )}
         </div>
       </div>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Delete Message"
+        message="Are you sure you want to delete this message? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, messageId: null })}
+      />
     </AdminLayout>
   )
 }

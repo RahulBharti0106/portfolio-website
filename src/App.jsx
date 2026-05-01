@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import useLenis from './hooks/useLenis';
+// import useLenis from './hooks/useLenis';
 
 // Public Pages
 import Home from './pages/Home';
@@ -24,8 +24,8 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
 function App() {
-  // Enable Lenis smooth scrolling for main website
-  useLenis();
+  // // Enable Lenis smooth scrolling for main website
+  // useLenis();
 
   return (
     <AuthProvider>

@@ -4,6 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout'
 import { api } from '../../lib/api'
 import toast from 'react-hot-toast'
 import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiSave } from 'react-icons/fi'
+import ConfirmModal from '../../components/admin/ConfirmModal';
 import './FooterSettings.css'
 
 function AdminFooterSettings() {
@@ -20,6 +21,7 @@ function AdminFooterSettings() {
   const [linkForm, setLinkForm] = useState({ label: '', url: '', is_visible: true })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, linkId: null });
 
   useEffect(() => { fetchFooterData() }, [])
 
@@ -59,36 +61,39 @@ function AdminFooterSettings() {
     setShowLinkModal(true)
   }
 
-  const saveLinkHandler = async (e) => {
-    e.preventDefault()
-    try {
-      if (editingLink) {
-        // For editing, use the PUT footer update with the link's id
-        // We update via the general footer update endpoint
-        await api.updateFooterSettings({ ...footerSettings, _link_update: { id: editingLink.id, ...linkForm } })
-        toast.success('Link updated!')
-      } else {
-        await api.createFooterLink(linkForm)
-        toast.success('Link added!')
-      }
-      setShowLinkModal(false)
-      fetchFooterData()
-    } catch (err) {
-      toast.error('Failed to save link')
+ const saveLinkHandler = async (e) => {
+  e.preventDefault()
+  try {
+    if (editingLink) {
+      await api.updateFooterSettings({
+        _link_update: { id: editingLink.id, ...linkForm }
+      })
+      toast.success('Link updated!')
+    } else {
+      await api.createFooterLink(linkForm)
+      toast.success('Link added!')
     }
+    setShowLinkModal(false)
+    fetchFooterData()
+  } catch (err) {
+    toast.error('Failed to save link: ' + err.message)
   }
+}
+const deleteLink = (id) => {
+  setConfirmModal({ isOpen: true, linkId: id });
+};
 
-  const deleteLink = async (id) => {
-    if (!confirm('Delete this link?')) return
-    try {
-      await api.deleteFooterLink(id)
-      toast.success('Link deleted')
-      fetchFooterData()
-    } catch {
-      toast.error('Failed to delete link')
-    }
+const confirmDelete = async () => {
+  try {
+    await api.deleteFooterLink(confirmModal.linkId);
+    toast.success('Link deleted');
+    fetchFooterData();
+  } catch {
+    toast.error('Failed to delete link');
+  } finally {
+    setConfirmModal({ isOpen: false, linkId: null });
   }
-
+};
   if (loading) return <AdminLayout><div style={{ textAlign: 'center', padding: '3rem' }}>Loading...</div></AdminLayout>
 
   return (
@@ -227,6 +232,14 @@ function AdminFooterSettings() {
           </div>
         )}
       </div>
+    <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Delete Link"
+        message="Are you sure you want to delete this link?"
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, linkId: null })}
+      />
     </AdminLayout>
   )
 }

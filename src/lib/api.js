@@ -133,4 +133,5 @@ export const api = {
   updateFooterSettings: (data) => put('admin-footer-update', data),
   createFooterLink: (data) => post('admin-footer-update', data),
   deleteFooterLink: (id) => del('admin-footer-update', { id }),
+  uploadImage: (image, folder) => post('upload-image', { image, folder }),
 };

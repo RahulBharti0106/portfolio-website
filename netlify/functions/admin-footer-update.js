@@ -24,62 +24,76 @@ exports.handler = async (event) => {
     }
   }
 
-  // PUT: update footer settings
-  if (event.httpMethod === 'PUT') {
-    try {
-      const {
-        brand_name, description, copyright_text,
-        show_product_column, product_column_title,
-        show_resources_column, resources_column_title,
-        show_company_column, company_column_title
-      } = JSON.parse(event.body);
+if (event.httpMethod === 'PUT') {
+  try {
+    const body = JSON.parse(event.body);
 
-      const { rows: existing } = await pool.query(
-        'SELECT id FROM footer_settings WHERE is_active = true LIMIT 1'
+    // Handle link update (separate from settings update)
+    if (body._link_update) {
+      const { id, label, url, is_visible } = body._link_update;
+      if (!id) return error('Link ID is required', 400);
+      const { rows } = await pool.query(
+        `UPDATE footer_links SET label=$1, url=$2, is_visible=$3 WHERE id=$4 RETURNING *`,
+        [label, url, is_visible ?? true, id]
       );
-
-      let result;
-      if (existing.length > 0) {
-        const { rows } = await pool.query(
-          `UPDATE footer_settings SET
-            brand_name=$1, description=$2, copyright_text=$3,
-            show_product_column=$4, product_column_title=$5,
-            show_resources_column=$6, resources_column_title=$7,
-            show_company_column=$8, company_column_title=$9, updated_at=now()
-           WHERE id=$10 RETURNING *`,
-          [
-            brand_name, description, copyright_text,
-            show_product_column, product_column_title,
-            show_resources_column, resources_column_title,
-            show_company_column, company_column_title,
-            existing[0].id
-          ]
-        );
-        result = rows[0];
-      } else {
-        const { rows } = await pool.query(
-          `INSERT INTO footer_settings (
-            brand_name, description, copyright_text,
-            show_product_column, product_column_title,
-            show_resources_column, resources_column_title,
-            show_company_column, company_column_title, is_active
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true) RETURNING *`,
-          [
-            brand_name, description, copyright_text,
-            show_product_column, product_column_title,
-            show_resources_column, resources_column_title,
-            show_company_column, company_column_title
-          ]
-        );
-        result = rows[0];
-      }
-
-      return ok(result);
-    } catch (err) {
-      console.error('admin-footer-update error:', err);
-      return error('Failed to update footer settings');
+      if (rows.length === 0) return error('Link not found', 404);
+      return ok(rows[0]);
     }
+
+    // Normal footer settings update
+    const {
+      brand_name, description, copyright_text,
+      show_product_column, product_column_title,
+      show_resources_column, resources_column_title,
+      show_company_column, company_column_title
+    } = body;
+
+    const { rows: existing } = await pool.query(
+      'SELECT id FROM footer_settings WHERE is_active = true LIMIT 1'
+    );
+
+    let result;
+    if (existing.length > 0) {
+      const { rows } = await pool.query(
+        `UPDATE footer_settings SET
+          brand_name=$1, description=$2, copyright_text=$3,
+          show_product_column=$4, product_column_title=$5,
+          show_resources_column=$6, resources_column_title=$7,
+          show_company_column=$8, company_column_title=$9, updated_at=now()
+         WHERE id=$10 RETURNING *`,
+        [
+          brand_name, description, copyright_text,
+          show_product_column, product_column_title,
+          show_resources_column, resources_column_title,
+          show_company_column, company_column_title,
+          existing[0].id
+        ]
+      );
+      result = rows[0];
+    } else {
+      const { rows } = await pool.query(
+        `INSERT INTO footer_settings (
+          brand_name, description, copyright_text,
+          show_product_column, product_column_title,
+          show_resources_column, resources_column_title,
+          show_company_column, company_column_title, is_active
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true) RETURNING *`,
+        [
+          brand_name, description, copyright_text,
+          show_product_column, product_column_title,
+          show_resources_column, resources_column_title,
+          show_company_column, company_column_title
+        ]
+      );
+      result = rows[0];
+    }
+
+    return ok(result);
+  } catch (err) {
+    console.error('admin-footer-update error:', err);
+    return error('Failed to update footer settings');
   }
+}
 
   // POST: create a new footer link
   if (event.httpMethod === 'POST') {

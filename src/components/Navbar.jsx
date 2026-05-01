@@ -1,42 +1,28 @@
 // src/components/Navbar.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiMenu, FiX, FiMoon, FiSun } from 'react-icons/fi';
-import { api } from '../lib/api';
+import { useTheme } from '../context/ThemeContext';
 import './Navbar.css';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
-  const themeCache = useRef(null);
+  const { theme } = useTheme();
 
+  // Apply theme whenever ThemeContext loads theme data
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const data = await api.getTheme()
-        if (data) themeCache.current = data;
+    const storedTheme = localStorage.getItem('theme');
+    const dark = storedTheme === 'light' ? false : true;
+    setIsDark(dark);
+    applyTheme(dark, theme);
+  }, [theme]); // re-runs when theme loads from DB
 
-        const storedTheme = localStorage.getItem('theme');
-        const isDarkMode = storedTheme === 'light' ? false : true;
-        setIsDark(isDarkMode);
-        applyTheme(isDarkMode);
-      } catch (err) {
-        console.warn('Theme load error:', err);
-        const storedTheme = localStorage.getItem('theme');
-        const isDarkMode = storedTheme === 'light' ? false : true;
-        setIsDark(isDarkMode);
-        applyTheme(isDarkMode);
-      }
-    };
-    loadTheme();
-  }, []);
-
-  const applyTheme = (isDark) => {
+  const applyTheme = (dark, themeData) => {
     const root = document.documentElement;
-    const themeData = themeCache.current;
 
     if (themeData) {
-      if (isDark) {
+      if (dark) {
         root.style.setProperty('--bg-primary', themeData.dark_bg_primary);
         root.style.setProperty('--bg-secondary', themeData.dark_bg_secondary);
         root.style.setProperty('--bg-accent', themeData.dark_accent);
@@ -52,8 +38,8 @@ function Navbar() {
         root.style.setProperty('--text-accent', themeData.light_accent);
       }
     } else {
-      // Fallback defaults
-      if (isDark) {
+      // Fallback defaults if DB theme not loaded yet
+      if (dark) {
         root.style.setProperty('--bg-primary', '#0a0a0a');
         root.style.setProperty('--bg-secondary', '#1a1a1a');
         root.style.setProperty('--bg-accent', '#6366f1');
@@ -70,15 +56,15 @@ function Navbar() {
       }
     }
 
-    root.style.setProperty('--border-color', isDark ? '#2d2d2d' : '#e5e7eb');
-    root.style.setProperty('--shadow', isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)');
+    root.style.setProperty('--border-color', dark ? '#2d2d2d' : '#e5e7eb');
+    root.style.setProperty('--shadow', dark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)');
   };
 
   const toggleTheme = () => {
     const newMode = !isDark;
     setIsDark(newMode);
     localStorage.setItem('theme', newMode ? 'dark' : 'light');
-    applyTheme(newMode);
+    applyTheme(newMode, theme);
   };
 
   return (
@@ -116,7 +102,7 @@ function Navbar() {
               onClick={() => { toggleTheme(); setIsOpen(false); }}
               className="theme-toggle mobile"
             >
-              {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             </button>
           </div>
         )}

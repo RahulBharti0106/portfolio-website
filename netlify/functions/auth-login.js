@@ -5,6 +5,11 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set');
+}
+
 const pool = require('./_db');
 const { ok, error, handleOptions, CORS_HEADERS } = require('./_auth');
 

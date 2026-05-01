@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi'
 import { getSkillIcon, getAvailableIcons } from '../../utils/skillIcons'
 import './Skills.css'
+import ConfirmModal from '../../components/admin/ConfirmModal';
 
 function AdminSkills() {
   const [skills, setSkills] = useState([])
@@ -14,6 +15,7 @@ function AdminSkills() {
   const [formData, setFormData] = useState({
     name: '', icon: 'FaCode', category: '', description: '', is_visible: true
   })
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, skillId: null });
 
   const availableIcons = getAvailableIcons()
 
@@ -59,17 +61,21 @@ function AdminSkills() {
     setShowModal(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this skill?')) return
-    try {
-      await api.deleteSkill(id)
-      toast.success('Skill deleted')
-      fetchSkills()
-    } catch {
-      toast.error('Error deleting skill')
-    }
-  }
+const handleDelete = async (id) => {
+  setConfirmModal({ isOpen: true, skillId: id });
+};
 
+const confirmDelete = async () => {
+  try {
+    await api.deleteSkill(confirmModal.skillId);
+    toast.success('Skill deleted');
+    fetchSkills();
+  } catch {
+    toast.error('Error deleting skill');
+  } finally {
+    setConfirmModal({ isOpen: false, skillId: null });
+  }
+};
   const toggleVisibility = async (skill) => {
     try {
       await api.updateSkill({ id: skill.id, ...skill, is_visible: !skill.is_visible })
@@ -209,6 +215,14 @@ function AdminSkills() {
           </div>
         )}
       </div>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Delete Skill"
+        message="Are you sure you want to delete this skill? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, skillId: null })}
+      />
     </AdminLayout>
   )
 }
