@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { FiGithub, FiExternalLink, FiX, FiCalendar, FiUser, FiCode, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { api } from '../lib/api'
+import { ProjectsSkeleton } from './Skeletons';
 import './Projects.css'
 
 function Projects() {
@@ -11,11 +12,13 @@ function Projects() {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  /* ── fetch ── */
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     api.getProjects()
       .then(data => setProjects(data || []))
       .catch(err => console.error('Projects fetch error:', err))
+      .finally(() => setLoading(false))
   }, [])
 
   /* ── lock body scroll when modal open ── */
@@ -52,6 +55,8 @@ function Projects() {
     const amount = card ? card.offsetWidth + 32 : 400
     el.scrollBy({ left: dir * amount, behavior: 'smooth' })
   }
+
+  if (loading) return <ProjectsSkeleton />
 
   return (
     <>

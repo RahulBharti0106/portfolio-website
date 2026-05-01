@@ -1,0 +1,206 @@
+/* Shared shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.skeleton-banner,
+.skeleton-avatar,
+.skeleton-btn,
+.skeleton-line,
+.skeleton-tag,
+.skeleton-divider,
+.skeleton-social-icon,
+.skeleton-skill-icon,
+.skeleton-skill-card,
+.skeleton-project-img,
+.skeleton-project-card {
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    rgba(255,255,255,0.06) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 6px;
+}
+
+/* Hero Skeleton */
+.skeleton-hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 10px 60px;
+}
+
+.skeleton-card {
+  width: 100%;
+  max-width: 1800px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.skeleton-banner {
+  height: 200px;
+  border-radius: 0;
+}
+
+.skeleton-body {
+  padding: 0 28px 36px;
+  position: relative;
+}
+
+.skeleton-avatar {
+  position: absolute;
+  top: -60px;
+  left: 28px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--bg-secondary);
+}
+
+.skeleton-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.skeleton-btn {
+  width: 110px;
+  height: 36px;
+  border-radius: 6px;
+}
+
+.skeleton-identity {
+  margin-top: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-line {
+  height: 16px;
+  border-radius: 6px;
+}
+
+.skeleton-line--name   { height: 40px; width: 45%; }
+.skeleton-line--tagline { height: 22px; width: 35%; }
+.skeleton-line--bio    { width: 90%; }
+.skeleton-line--bio-short { width: 65%; }
+
+.skeleton-tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.skeleton-tag {
+  height: 28px;
+  width: 120px;
+  border-radius: 999px;
+}
+
+.skeleton-divider {
+  height: 1px;
+  margin: 24px 0;
+  border-radius: 0;
+}
+
+.skeleton-socials {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+/* Skills Skeleton */
+.skeleton-skills-track {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.skeleton-skill-card {
+  flex: 0 0 300px;
+  height: 200px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 2rem;
+  background: var(--bg-secondary) !important;
+  animation: none !important;
+  border: 1px solid var(--border-color);
+}
+
+.skeleton-skill-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+}
+
+.skeleton-line--skill-name {
+  height: 20px;
+  width: 120px;
+}
+
+.skeleton-skill-tags {
+  display: flex;
+  gap: 8px;
+}
+
+/* Projects Skeleton */
+.skeleton-projects-rail {
+  display: flex;
+  gap: 2rem;
+  padding: 0 5rem 2rem;
+  overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.skeleton-project-card {
+  flex: 0 0 calc(50% - 1rem);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--bg-secondary) !important;
+  animation: none !important;
+  border: 1px solid var(--border-color);
+}
+
+.skeleton-project-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0;
+}
+
+.skeleton-project-body {
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-line--project-title {
+  height: 22px;
+  width: 70%;
+}
+
+@media (max-width: 640px) {
+  .skeleton-banner { height: 160px; }
+  .skeleton-avatar { width: 90px; height: 90px; }
+  .skeleton-line--name { width: 65%; }
+}

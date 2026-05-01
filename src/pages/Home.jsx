@@ -5,20 +5,30 @@ import Projects from '../components/Projects';
 import About from '../components/About';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
-import uselenis from '../hooks/useLenis'
+import ErrorBoundary from '../components/ErrorBoundary';
+import useLenis from '../hooks/useLenis';
 
 function Home() {
+  useLenis();
 
-  uselenis();
-  
   return (
     <div className="home">
       <Navbar />
-      <Hero />
-      <Skills />
-      <Projects />
-      <About />
-      <Contact />
+      <ErrorBoundary>
+        <Hero />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Skills />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Projects />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <About />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Contact />
+      </ErrorBoundary>
       <Footer />
     </div>
   );

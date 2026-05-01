@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../lib/api';
 import { getSkillIcon } from '../utils/skillIcons';
+import { SkillsSkeleton } from './Skeletons';
 import './Skills.css';
 
 function Skills() {
@@ -62,10 +63,16 @@ function Skills() {
     });
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '2rem' }}>Loading skills...</div>;
-  if (error) return <div style={{ color: 'red', textAlign: 'center' }}>{error}</div>;
-  if (skills.length === 0) return <div style={{ textAlign: 'center', padding: '2rem' }}>No skills found.</div>;
-
+  if (loading) return <SkillsSkeleton />;
+  if (error) return (
+    <section id="skills" className="skills-section">
+      <h2 className="section-title">My <span>Skills</span></h2>
+      <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+        Failed to load skills. Please refresh the page.
+      </div>
+    </section>
+  );
+  if (skills.length === 0) return null;
   return (
     <section id="skills" className="skills-section">
       <h2 className="section-title">My <span>Skills</span></h2>

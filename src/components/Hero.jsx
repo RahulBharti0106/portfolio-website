@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { TbBrandTelegram } from 'react-icons/tb'
 import { FiGithub, FiLinkedin, FiMail, FiInstagram, FiMapPin, FiCode, FiBookOpen, FiArrowRight } from 'react-icons/fi'
 import { api } from '../lib/api'
+import { HeroSkeleton } from './Skeletons';
 import './Hero.css'
 
 function Hero() {
@@ -25,7 +26,7 @@ function Hero() {
     }
   }
 
-  if (!profile) return <div className="hero-skeleton" />
+  if (!profile) return <HeroSkeleton />
 
   const iconMap = {
     FiGithub, FiLinkedin, FiMail,
