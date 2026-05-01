@@ -8,7 +8,7 @@ import {
     SiRuby, SiGo, SiRust, SiSwift, SiKotlin,
 
     // Frontend Frameworks & Libraries
-    SiReact, SiVuedotjs, SiAngular, SiSvelte, SiNextdotjs, SiNuxtdotjs,
+    SiReact, SiVuedotjs, SiAngular, SiSvelte, SiNextdotjs,
 
     // Backend Frameworks
     SiNodedotjs, SiExpress, SiDjango, SiFlask, SiSpring, SiLaravel, SiRubyonrails,
@@ -71,7 +71,7 @@ export const skillIconMap = {
     'SiAngular': { icon: SiAngular, label: 'Angular', category: 'Frontend', color: '#DD0031' },
     'SiSvelte': { icon: SiSvelte, label: 'Svelte', category: 'Frontend', color: '#FF3E00' },
     'SiNextdotjs': { icon: SiNextdotjs, label: 'Next.js', category: 'Frontend', color: '#000000' },
-    'SiNuxtdotjs': { icon: SiNuxtdotjs, label: 'Nuxt.js', category: 'Frontend', color: '#00DC82' },
+    // 'SiNuxtdotjs': { icon: SiNuxtdotjs, label: 'Nuxt.js', category: 'Frontend', color: '#00DC82' },
     'DiHtml5': { icon: DiHtml5, label: 'HTML5', category: 'Frontend', color: '#E34F26' },
     'DiCss3': { icon: DiCss3, label: 'CSS3', category: 'Frontend', color: '#1572B6' },
 
